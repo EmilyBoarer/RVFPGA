@@ -35,6 +35,10 @@ verilate:
 	verilator --cc --exe --build \
 		-j 0 -Wall \
 		--timing \
+		--trace \
+		--coverage \
+		-Wno-ZERODLY \
+		-Wno-UNUSEDSIGNAL \
 		sim_main.cpp \
 		$(verilog_dir)/$(top_level_module).v
 	@echo "Verilator done."
@@ -42,19 +46,17 @@ verilate:
 simulate:
 	@echo "Running Model"
 # increased risk of reset bugs, but better performance:
-	obj_dir/V$(top_level_module) -O3 --x-assign fast --x-initial fast --noassert 
+	obj_dir/V$(top_level_module) +trace
+# -O3 --x-assign fast --x-initial fast --noassert
 # > waveforms.vcd
 
 analyse:
 	@echo "Launching GTKWave for analysis"
-	gtkwave waveforms.vcd
-
-fullsimulate:
-	@echo "Running Model"
-	obj_dir/V$(top_level_module)
+	gtkwave vcd/waveforms.vcd
 
 clean:
 	@echo "cleaning up generated files"
 	rm -rf $(intermediate_dir)
 	rm -rf $(verilog_dir)
 	rm -rf obj_dir
+	rm -rf vcd
