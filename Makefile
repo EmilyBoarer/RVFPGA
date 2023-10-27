@@ -40,7 +40,8 @@ verilate:
 		-Wno-ZERODLY \
 		-Wno-UNUSEDSIGNAL \
 		sim_main.cpp \
-		$(verilog_dir)/$(top_level_module).v
+		toptoplevel.v
+# $(verilog_dir)/$(top_level_module).v
 	@echo "Verilator done."
 
 simulate:

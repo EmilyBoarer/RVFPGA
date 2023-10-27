@@ -1,4 +1,4 @@
-#include "VmkToplevel.h"
+#include "Vtoptoplevel.h"
 #include "verilated.h"
 
 // for traces
@@ -8,13 +8,13 @@
 int main(int argc, char** argv) {
     VerilatedContext* contextp = new VerilatedContext;
     contextp->commandArgs(argc, argv);
-    VmkToplevel* top = new VmkToplevel{contextp};
+    Vtoptoplevel* top = new Vtoptoplevel{contextp};
 
     Verilated::traceEverOn(true);
     VL_PRINTF("Setting up to save traces to vcd/waveforms.vcd\n");
     VerilatedVcdC* tfp = new VerilatedVcdC;
     top->trace(tfp, 99);  // Trace 99 levels of hierarchy (or see below)
-    tfp->dumpvars(1, "t");  // trace 1 level under "t"
+    // tfp->dumpvars(1, "t");  // trace 1 level under "t"
     mkdir("vcd", 0777);
     tfp->open("vcd/waveforms.vcd");
 

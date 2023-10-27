@@ -21,18 +21,12 @@ typedef struct {
     Funct7_T   funct7;
 } ITypeInstruction_T deriving (Bits, Eq);
 
-// interface DecodeIfc;
-//     method Action set_instr(Word_T instr);
-//     method RF_field_T get_rd();
-// endinterface
+module mkToplevel();
+    // rule increment;
+    //     $display("Hello World");
+    //     $finish();
+    // endrule
 
-interface PipelineIfc;
-    method Valid_T get_s0();
-    method Valid_T get_s1();
-    method Valid_T get_s2();
-endinterface
-
-module mkToplevel(PipelineIfc);
     // // DECODE output registers in terms of combinational logic on instruction and RF
     // Reg#(RF_field_T) rd <- mkReg(0);
     // method Action set_instr(Word_T instr);
@@ -44,33 +38,18 @@ module mkToplevel(PipelineIfc);
     Reg#(Valid_T) s1 <- mkReg(0);
     Reg#(Valid_T) s2 <- mkReg(0);
 
-
-    rule debug;
-        /* verilator lint_off ZERODLY */
-        $display("Hello World");
-        $finish();
-        /* verilator lint_on ZERODLY */
-    endrule
+    
 
     rule increment;
+        $display("s0:", fshow(s0));
+        $display("s1:", fshow(s1));
+        $display("s2:", fshow(s2));
         s0 <= s0 + 1;
         s1 <= s0;
         if (s1 == 2) begin
             s2 <= s1;
         end
     endrule
-
-    method Valid_T get_s0();
-        return s0;
-    endmethod
-
-    method Valid_T get_s1();
-        return s1;
-    endmethod
-
-    method Valid_T get_s2();
-        return s2;
-    endmethod
 
 endmodule
 
