@@ -21,6 +21,8 @@ verilog: clean
 	mkdir $(verilog_dir)
 	/home/emily/toolchains/bsc/bsc/inst/bin/bsc \
 		-verilog \
+		-p .:%/Libraries:src \
+		-u \
 		-g $(top_level_module) \
 		-bdir $(intermediate_dir) \
 		-vdir $(verilog_dir) \
