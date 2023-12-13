@@ -12,11 +12,15 @@ interface DecodeIfc; // using the same types as the rest of the system
 
     interface Put#(PC_T) put_pc;
     interface Get#(PC_T) get_pc;
+
+    interface Put#(RF_T) put_rf;
+    interface Get#(RF_T) get_fr;
 endinterface
 
 module mkDecode(DecodeIfc);
     Reg#(Valid_T) valid <- mkReg(0);
     Reg#(PC_T) pc <- mkReg(0);
+    Reg#(RF_T) rf <- mkReg(0);
 
     interface Put put_valid;
         method Action put (Valid_T newvalid);
@@ -29,6 +33,7 @@ module mkDecode(DecodeIfc);
         endmethod
     endinterface
 
+
     interface Put put_pc;
         method Action put (PC_T newpc);
             pc <= newpc;
@@ -37,6 +42,18 @@ module mkDecode(DecodeIfc);
     interface Get get_pc;
         method ActionValue#(PC_T) get ();
             return pc;
+        endmethod
+    endinterface
+
+
+    interface Put put_rf;
+        method Action put (RF_T newrf);
+            rf <= newrf;
+        endmethod
+    endinterface
+    interface Get get_rf;
+        method ActionValue#(RF_T) get ();
+            return rf;
         endmethod
     endinterface
 
