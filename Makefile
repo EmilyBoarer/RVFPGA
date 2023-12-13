@@ -19,7 +19,7 @@ sim: simulate analyse
 verilog: clean
 	mkdir $(intermediate_dir)
 	mkdir $(verilog_dir)
-	/home/emily/toolchains/bsc/bsc/inst/bin/bsc \
+	bsc \
 		-verilog \
 		-p .:%/Libraries:src \
 		-u \
