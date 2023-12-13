@@ -1,12 +1,12 @@
-package Decode;
+package Rfupdate;
 
 import GetPut::*;
 import Types::*;
 
-export DecodeIfc (..);
-export mkDecode;
+export RfupdateIfc (..);
+export mkRfupdate;
 
-interface DecodeIfc; // using the same types as the rest of the system
+interface RfupdateIfc; // using the same types as the rest of the system
     interface Put#(Valid_T) put_valid;
     interface Get#(Valid_T) get_valid;
 
@@ -17,7 +17,7 @@ interface DecodeIfc; // using the same types as the rest of the system
     interface Get#(RF_T) get_rf;
 endinterface
 
-module mkDecode(DecodeIfc);
+module mkRfupdate(RfupdateIfc);
     Reg#(Valid_T) valid <- mkReg(0);
     Reg#(PC_T) pc <- mkReg(0);
     Reg#(RF_T) rf <- mkReg(unpack(0));

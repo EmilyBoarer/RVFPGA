@@ -15,12 +15,12 @@ interface ControlIfc; // using the same types as the rest of the system
     interface Get#(PC_T) get_pc;
 
     interface Put#(RF_T) put_rf;
-    interface Get#(RF_T) get_fr;
+    interface Get#(RF_T) get_rf;
 endinterface
 
 module mkControl(ControlIfc);
     // logic for enabling harts (disable / end not done yet)
-    Reg#(Valid_T) num_enabled <- mkReg(3);
+    Reg#(Valid_T) num_enabled <- mkReg(1);
     // Reg#(PC_T)    initial_pc  <- mkReg(123); // TODO ignore this, just initialise each pc to 0? may work for the tiny scale that we're working with here - each hart has different instruction memory
     // When num_enabled > 0, set that number to be the 'valid' of that hart, set the PC to the starting address, then decrement num_enabled by 1.
     // when num_enabled = 0, just pass the values through untouched.

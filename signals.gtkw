@@ -1,0 +1,44 @@
+[*]
+[*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
+[*] Wed Dec 13 22:19:21 2023
+[*]
+[dumpfile] "/home/emily/PartIIProject/RVFPGA/vcd/waveforms.vcd"
+[dumpfile_mtime] "Wed Dec 13 22:16:38 2023"
+[dumpfile_size] 19821
+[savefile] "/home/emily/PartIIProject/RVFPGA/signals.gtkw"
+[timestart] 1
+[size] 1440 2523
+[pos] -1531 -534
+*-4.974829 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] TOP.
+[treeopen] TOP.toptoplevel.
+[sst_width] 353
+[signals_width] 262
+[sst_expanded] 1
+[sst_vpaned_height] 813
+@28
+TOP.toptoplevel.toplevel.CLK
+TOP.toptoplevel.toplevel.RST_N
+@22
+TOP.toptoplevel.toplevel.s_control_num_enabled[3:0]
+TOP.toptoplevel.toplevel.s_control_valid_register[3:0]
+@28
+TOP.toptoplevel.toplevel.s_control_valid_valid
+@22
+TOP.toptoplevel.toplevel.s_fetch_valid[3:0]
+TOP.toptoplevel.toplevel.s_decode_valid[3:0]
+TOP.toptoplevel.toplevel.s_exec_valid[3:0]
+TOP.toptoplevel.toplevel.s_datmem_valid[3:0]
+TOP.toptoplevel.toplevel.s_rfup_valid[3:0]
+TOP.toptoplevel.toplevel.s_control_pc_register[31:0]
+@28
+TOP.toptoplevel.toplevel.s_control_pc_valid
+@22
+TOP.toptoplevel.toplevel.s_fetch_pc[31:0]
+TOP.toptoplevel.toplevel.s_decode_pc[31:0]
+TOP.toptoplevel.toplevel.s_exec_pc[31:0]
+TOP.toptoplevel.toplevel.s_datmem_pc[31:0]
+TOP.toptoplevel.toplevel.s_rfup_pc[31:0]
+TOP.toptoplevel.toplevel.s_rfup_rf[991:0]
+[pattern_trace] 1
+[pattern_trace] 0

@@ -1,12 +1,12 @@
-package Decode;
+package Fetch;
 
 import GetPut::*;
 import Types::*;
 
-export DecodeIfc (..);
-export mkDecode;
+export FetchIfc (..);
+export mkFetch;
 
-interface DecodeIfc; // using the same types as the rest of the system
+interface FetchIfc; // using the same types as the rest of the system
     interface Put#(Valid_T) put_valid;
     interface Get#(Valid_T) get_valid;
 
@@ -17,7 +17,7 @@ interface DecodeIfc; // using the same types as the rest of the system
     interface Get#(RF_T) get_rf;
 endinterface
 
-module mkDecode(DecodeIfc);
+module mkFetch(FetchIfc);
     Reg#(Valid_T) valid <- mkReg(0);
     Reg#(PC_T) pc <- mkReg(0);
     Reg#(RF_T) rf <- mkReg(unpack(0));

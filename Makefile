@@ -52,7 +52,7 @@ simulate:
 
 analyse:
 	@echo "Launching GTKWave for analysis"
-	gtkwave vcd/waveforms.vcd
+	gtkwave --save=signals.gtkw vcd/waveforms.vcd
 
 clean:
 	@echo "cleaning up generated files"
