@@ -15,7 +15,11 @@ interface FetchIfc; // using the same types as the rest of the system
 
     interface Put#(RF_T) put_rf;
     interface Get#(RF_T) get_rf;
+
+    interface Get#(Word_T) get_instr;
 endinterface
+
+// This stage is responsible for fetching the correct instruction from program memory according to the PC (and valid?)
 
 module mkFetch(FetchIfc);
     Reg#(Valid_T) valid <- mkReg(0);
@@ -54,6 +58,13 @@ module mkFetch(FetchIfc);
     interface Get get_rf;
         method ActionValue#(RF_T) get ();
             return rf;
+        endmethod
+    endinterface
+
+
+    interface Get get_instr;
+        method ActionValue#(Bit#(32)) get ();
+            return 32'b00000000000100101000001010010011; // ADDI r7 r7 1 (r7 = r7 + 1)  7=00101 // sample test instruction
         endmethod
     endinterface
 

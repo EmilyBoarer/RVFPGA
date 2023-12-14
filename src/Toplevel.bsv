@@ -38,6 +38,8 @@ module mkToplevel();
     mkConnection(s_fetch.get_valid,   s_decode.put_valid );
     mkConnection(s_fetch.get_pc,      s_decode.put_pc    );
     mkConnection(s_fetch.get_rf,      s_decode.put_rf    );
+
+    mkConnection(s_fetch.get_instr,   s_decode.put_instr );
     
     // Connect Decode -> Execute
     mkConnection(s_decode.get_valid,  s_exec.put_valid   );

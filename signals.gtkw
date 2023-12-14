@@ -1,44 +1,64 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Wed Dec 13 22:19:21 2023
+[*] Thu Dec 14 22:14:50 2023
 [*]
 [dumpfile] "/home/emily/PartIIProject/RVFPGA/vcd/waveforms.vcd"
-[dumpfile_mtime] "Wed Dec 13 22:16:38 2023"
-[dumpfile_size] 19821
+[dumpfile_mtime] "Thu Dec 14 22:13:40 2023"
+[dumpfile_size] 19148
 [savefile] "/home/emily/PartIIProject/RVFPGA/signals.gtkw"
 [timestart] 1
-[size] 1440 2523
-[pos] -1531 -534
-*-4.974829 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[size] 2470 1376
+[pos] -1 -1
+*-4.974829 7 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] TOP.
 [treeopen] TOP.toptoplevel.
-[sst_width] 353
+[sst_width] 502
 [signals_width] 262
 [sst_expanded] 1
-[sst_vpaned_height] 813
+[sst_vpaned_height] 178
 @28
 TOP.toptoplevel.toplevel.CLK
 TOP.toptoplevel.toplevel.RST_N
 @22
 TOP.toptoplevel.toplevel.s_control_num_enabled[3:0]
+[color] 7
 TOP.toptoplevel.toplevel.s_control_valid_register[3:0]
 @28
 TOP.toptoplevel.toplevel.s_control_valid_valid
 @22
+[color] 7
 TOP.toptoplevel.toplevel.s_fetch_valid[3:0]
+[color] 7
 TOP.toptoplevel.toplevel.s_decode_valid[3:0]
+[color] 7
 TOP.toptoplevel.toplevel.s_exec_valid[3:0]
+[color] 7
 TOP.toptoplevel.toplevel.s_datmem_valid[3:0]
+[color] 7
 TOP.toptoplevel.toplevel.s_rfup_valid[3:0]
+[color] 2
 TOP.toptoplevel.toplevel.s_control_pc_register[31:0]
 @28
+[color] 2
 TOP.toptoplevel.toplevel.s_control_pc_valid
 @22
+[color] 2
 TOP.toptoplevel.toplevel.s_fetch_pc[31:0]
+[color] 2
 TOP.toptoplevel.toplevel.s_decode_pc[31:0]
+[color] 2
 TOP.toptoplevel.toplevel.s_exec_pc[31:0]
+[color] 2
 TOP.toptoplevel.toplevel.s_datmem_pc[31:0]
+[color] 2
 TOP.toptoplevel.toplevel.s_rfup_pc[31:0]
+[color] 1
 TOP.toptoplevel.toplevel.s_rfup_rf[991:0]
+TOP.toptoplevel.toplevel.s_decode_rd[4:0]
+TOP.toptoplevel.toplevel.s_decode_rfrs1[31:0]
+TOP.toptoplevel.toplevel.s_decode_rfrs2[31:0]
+TOP.toptoplevel.toplevel.s_decode_imm[31:0]
+@a9
+TOP.toptoplevel.toplevel.s_decode_controllines[7:0]
 [pattern_trace] 1
 [pattern_trace] 0

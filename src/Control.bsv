@@ -18,6 +18,10 @@ interface ControlIfc; // using the same types as the rest of the system
     interface Get#(RF_T) get_rf;
 endinterface
 
+// This stage is responsible for enabling the correct number of stages, 
+// as is determined by the initial value of num_enabled.
+// TODO: set PC when initialising each hart?
+
 module mkControl(ControlIfc);
     // logic for enabling harts (disable / end not done yet)
     Reg#(Valid_T) num_enabled <- mkReg(1);
