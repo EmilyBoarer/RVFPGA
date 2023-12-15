@@ -21,7 +21,7 @@ verilog: clean
 	mkdir $(verilog_dir)
 	bsc \
 		-verilog \
-		-p .:%/Libraries:src \
+		-p .:%/Libraries:src:lib \
 		-u \
 		-g $(top_level_module) \
 		-bdir $(intermediate_dir) \
