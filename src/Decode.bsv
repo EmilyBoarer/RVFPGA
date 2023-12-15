@@ -24,7 +24,6 @@ interface DecodeIfc; // using the same types as the rest of the system
     interface Get#(Word_T)  get_imm;
     interface Get#(CL_T)    get_ctrl;
 
-    // TODO get control lines
 endinterface
 
 module mkDecode(DecodeIfc);
@@ -32,27 +31,13 @@ module mkDecode(DecodeIfc);
     Reg#(PC_T) pc <- mkReg(0);
     Reg#(RF_T) rf <- mkReg(unpack(0));
 
-    Reg#(Bool) need_to_invalidate <- mkReg(False);
-
-    Reg#(Bit#(5)) rd <- mkReg(0);
-    Reg#(Word_T) rfrs1 <- mkReg(0);
-    Reg#(Word_T) rfrs2 <- mkReg(0);
-    Reg#(Word_T) imm <- mkReg(0);
     Reg#(CL_T) controllines <- mkReg(unpack(0));
 
+    Reg#(Bit#(32)) instr <- mkReg(0); 
 
     interface Put put_valid;
         method Action put (Valid_T newvalid);
             valid <= newvalid;
-        endmethod
-    endinterface
-    interface Get get_valid;
-        method ActionValue#(Valid_T) get ();
-            if (need_to_invalidate) begin
-                return 0;
-            end else begin
-                return valid;
-            end
         endmethod
     endinterface
 
@@ -82,255 +67,293 @@ module mkDecode(DecodeIfc);
 
 
     interface Put put_instr;
-        method Action put (Bit#(32) instr);
-        
-            // DECODE OPCODE: // TODO CREDIT: DECODE LOGIC FROM CLARVI - just transcribed into BSV
-            Bit#(2)  opext   = instr[1 :0 ];
-            Bit#(5)  opcode  = instr[6 :2 ];
-            rd              <= instr[11:7 ];
-            Bit#(3)  funct3  = instr[14:12];
-            Bit#(5)  rs1     = instr[19:15];
-            Bit#(5)  rs2     = instr[24:20];
-            Bit#(7)  funct7  = instr[31:25];
-            Bit#(12) funct12 = instr[31:20];
-
-            // since BSC doesn't allow modification of a struct's field when in a register, create a new
-            // instance of the struct and then update that in the code, finally assigning this new instance
-            // to the register
-            let cl = controllines;
-            cl.alu_pc_in  = False;
-            cl.alu_imm_in = False;
-            cl.alu_add    = False;
-            cl.alu_br_eq  = False;
-            cl.alu_pc_out = False;
-            cl.data_read  = False;
-            cl.data_write = False;
-            cl.rf_update  = False;
-
-            let immediate = imm;
-
-            // This is used to get around BSV scheduling issues when assigning directly to 'valid'
-            let n_t_invalidate = False;
-
-
-            // invalidate hart if not a valid instruction
-            if (opext != 2'b11) n_t_invalidate = True; // I expect this assignment to valid to break things if Fetch is implemented properly
-
-
-            // define binary translations to make it easier to read the decoding code
-            `define opcode_branch 5'b11000
-            `define opcode_load   5'b00000
-            `define opcode_store  5'b01000
-            `define opcode_opimm  5'b00100
-            `define opcode_op     5'b01100
-
-            `define func3_addsub  3'b000
-
-            `define func3_beq     3'b000
-
-            `define func3_lw      3'b010
-
-            `define func3_sw      3'b010
-
-            
-            case (opcode)
-                // BRANCH ===========
-                `opcode_branch: begin
-                    immediate[4:1]  = instr[11:8];
-                    immediate[10:5] = instr[30:25];
-                    immediate[11]   = instr[7];
-                    immediate[12]   = instr[31];
-                    case (funct3) 
-                        `func3_beq: begin // ADD/SUB // TODO account for sub option too
-                            cl.alu_pc_in  = True;
-                            cl.alu_imm_in = True;
-                            cl.alu_br_eq  = True;
-                            cl.alu_pc_out = True;
-                        end
-                        default: begin  // TODO add other instructions
-                            // not supported, so stop hart
-                            n_t_invalidate = True;
-                        end
-                    endcase                    
-                end
-
-                // LOAD ===========
-                `opcode_load: begin
-                    immediate[11:0] = funct12;
-                    case (funct3) 
-                        `func3_lw: begin // ADD/SUB // TODO account for sub option too
-                            cl.alu_imm_in = True;
-                            cl.alu_add    = True;
-                            cl.data_read  = True;
-                            cl.rf_update  = True;
-                        end
-                        default: begin  // TODO add other instructions
-                            // not supported, so stop hart
-                            n_t_invalidate = True;
-                        end
-                    endcase
-                end
-
-                // STORE ===========
-                `opcode_store: begin
-                    immediate[4:0]  = rd;
-                    immediate[11:5] = funct7;
-                    case (funct3) 
-                        `func3_sw: begin // ADD/SUB // TODO account for sub option too
-                            cl.alu_imm_in = True;
-                            cl.alu_add    = True;
-                            cl.data_write = True;
-                        end
-                        default: begin  // TODO add other instructions
-                            // not supported, so stop hart
-                            n_t_invalidate = True;
-                        end
-                    endcase
-                end
-
-                // OP_IMM ==========
-                `opcode_opimm: begin
-                    immediate[11:0] = funct12;
-                    case (funct3) 
-                        `func3_addsub: begin // ADD/SUB // TODO account for sub option too
-                            cl.alu_imm_in = True;
-                            cl.alu_add    = True;
-                            cl.rf_update  = True;
-                        end
-                        default: begin  // TODO add other instructions
-                            // not supported, so stop hart
-                            n_t_invalidate = True;
-                        end
-                    endcase
-                end
-
-                // OP ===========
-                `opcode_op: begin
-                    case (funct3) 
-                        `func3_addsub: begin // ADD/SUB // TODO account for sub option too
-                            cl.alu_add    = True;
-                            cl.rf_update  = True;
-                        end
-                        default: begin  // TODO add other instructions
-                            // not supported, so stop hart
-                            n_t_invalidate = True;
-                        end
-                    endcase
-                end
-
-                // OTHER OPCODE ==========
-                default: begin // TODO add other instructions
-                    // Not supported, so stop hart
-                    n_t_invalidate = True;
-                end  
-                
-            endcase
-
-            // TODO CREDIT END: DECODE LOGIC FROM CLARVI
-
-            controllines <= cl;
-            need_to_invalidate <= n_t_invalidate;
-            imm <= immediate;
-
-            rfrs1 <= case (rs1)
-                0: 0;
-                1: rf.r1 ;
-                2: rf.r2 ;
-                3: rf.r3 ;
-                4: rf.r4 ;
-                5: rf.r5 ;
-                6: rf.r6 ;
-                7: rf.r7 ;
-                8: rf.r8 ;
-                9: rf.r9 ;
-                10: rf.r10 ;
-                11: rf.r11 ;
-                12: rf.r12 ;
-                13: rf.r13 ;
-                14: rf.r14 ;
-                15: rf.r15 ;
-                16: rf.r16 ;
-                17: rf.r17 ;
-                18: rf.r18 ;
-                19: rf.r19 ;
-                20: rf.r20 ;
-                21: rf.r21 ;
-                22: rf.r22 ;
-                23: rf.r23 ;
-                24: rf.r24 ;
-                25: rf.r25 ;
-                26: rf.r26 ;
-                27: rf.r27 ;
-                28: rf.r28 ;
-                29: rf.r29 ;
-                30: rf.r30 ;
-                31: rf.r31 ;
-            endcase ;
-
-            rfrs2 <= case (rs2)
-                0: 0;
-                1: rf.r1 ;
-                2: rf.r2 ;
-                3: rf.r3 ;
-                4: rf.r4 ;
-                5: rf.r5 ;
-                6: rf.r6 ;
-                7: rf.r7 ;
-                8: rf.r8 ;
-                9: rf.r9 ;
-                10: rf.r10 ;
-                11: rf.r11 ;
-                12: rf.r12 ;
-                13: rf.r13 ;
-                14: rf.r14 ;
-                15: rf.r15 ;
-                16: rf.r16 ;
-                17: rf.r17 ;
-                18: rf.r18 ;
-                19: rf.r19 ;
-                20: rf.r20 ;
-                21: rf.r21 ;
-                22: rf.r22 ;
-                23: rf.r23 ;
-                24: rf.r24 ;
-                25: rf.r25 ;
-                26: rf.r26 ;
-                27: rf.r27 ;
-                28: rf.r28 ;
-                29: rf.r29 ;
-                30: rf.r30 ;
-                31: rf.r31 ;
-            endcase ;
-
+        method Action put (Bit#(32) newinstr);
+            instr <= newinstr;
         endmethod
     endinterface
 
+
+    // TODO each of these fucntions are the ones that need the comb logic (+get_valid which is above)
+    interface Get get_valid;
+        method ActionValue#(Valid_T) get ();
+            let decoded = decode_instruction(instr, rf);
+            if (decoded.need_to_invalidate) begin
+                return 0;
+            end else begin
+                return valid;
+            end
+        endmethod
+    endinterface
     interface Get get_rd;
         method ActionValue#(Bit#(5)) get ();
-            return rd;
+            let decoded = decode_instruction(instr, rf);
+            return decoded.rd;
         endmethod
     endinterface
     interface Get get_rfrs1;
         method ActionValue#(Word_T) get ();
-            return rfrs1;
+            let decoded = decode_instruction(instr, rf);
+            return decoded.rfrs1;
         endmethod
     endinterface
     interface Get get_rfrs2;
         method ActionValue#(Word_T) get ();
-            return rfrs2;
+            let decoded = decode_instruction(instr, rf);
+            return decoded.rfrs2;
         endmethod
     endinterface
     interface Get get_imm;
         method ActionValue#(Word_T) get ();
-            return imm;
+            let decoded = decode_instruction(instr, rf);
+            return decoded.imm;
         endmethod
     endinterface
     interface Get get_ctrl;
         method ActionValue#(CL_T) get ();
-            return controllines;
+            let decoded = decode_instruction(instr, rf);
+            return decoded.cl;
         endmethod
     endinterface
 
 endmodule
+
+typedef struct { // DECODE workings TODO MOVE TO TYPES.BSV
+    Bit#(2)  opext;
+    Bit#(5)  opcode;
+    Bit#(5)  rd;
+    Bit#(3)  funct3;
+    Bit#(5)  rs1;
+    Bit#(5)  rs2;
+    Bit#(7)  funct7;
+    Bit#(12) funct12;
+    Bool     need_to_invalidate; // used to invalidate hart if invalid instruction given = a hacky work-around for this CPU, not RISC-V compliant
+    CL_T     cl;
+    Word_T   imm;
+    Word_T   rfrs1;
+    Word_T   rfrs2;
+} Decode_T deriving (Bits, Eq);
+
+function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
+    // TODO CREDIT: DECODE LOGIC FROM CLARVI - just transcribed into BSV
+    // but actually now ended up following python sim's logic instead, then transcribed again from bluespec to bluespec
+    // since implemented as put (was a bad idea). plus used the actual RISC-V spec to inform it too, so actually
+    // just really used it for the binary conversions
+
+    Decode_T decoded = ?;
+    decoded.opext   = instr[1 :0 ];
+    decoded.opcode  = instr[6 :2 ];
+    decoded.rd      = instr[11:7 ];
+    decoded.funct3  = instr[14:12];
+    decoded.rs1     = instr[19:15];
+    decoded.rs2     = instr[24:20];
+    decoded.funct7  = instr[31:25];
+    decoded.funct12 = instr[31:20];
+    decoded.need_to_invalidate = False;
+    decoded.imm     = 0;
+    decoded.rfrs1   = 0;
+    decoded.rfrs2   = 0;
+
+    CL_T controllines = ?;
+    controllines.alu_pc_in  = False;
+    controllines.alu_imm_in = False;
+    controllines.alu_add    = False;
+    controllines.alu_br_eq  = False;
+    controllines.alu_pc_out = False;
+    controllines.data_read  = False;
+    controllines.data_write = False;
+    controllines.rf_update  = False;
+
+    decoded.cl              = controllines;
+    
+
+    // invalidate hart if not a valid instruction
+    if (decoded.opext != 2'b11) decoded.need_to_invalidate = True; // I expect this assignment to valid to break things if Fetch is implemented properly
+
+
+    // define binary translations to make it easier to read the decoding code
+    `define opcode_branch 5'b11000
+    `define opcode_load   5'b00000
+    `define opcode_store  5'b01000
+    `define opcode_opimm  5'b00100
+    `define opcode_op     5'b01100
+
+    `define func3_addsub  3'b000
+
+    `define func3_beq     3'b000
+
+    `define func3_lw      3'b010
+
+    `define func3_sw      3'b010
+
+    
+    case (decoded.opcode)
+        // BRANCH ===========
+        `opcode_branch: begin
+            decoded.imm[4:1]  = instr[11:8];
+            decoded.imm[10:5] = instr[30:25];
+            decoded.imm[11]   = instr[7];
+            decoded.imm[12]   = instr[31];
+            case (decoded.funct3) 
+                `func3_beq: begin // ADD/SUB // TODO account for sub option too
+                    decoded.cl.alu_pc_in  = True;
+                    decoded.cl.alu_imm_in = True;
+                    decoded.cl.alu_br_eq  = True;
+                    decoded.cl.alu_pc_out = True;
+                end
+                default: begin  // TODO add other instructions
+                    // not supported, so stop hart
+                    decoded.need_to_invalidate = True;
+                end
+            endcase                    
+        end
+
+        // LOAD ===========
+        `opcode_load: begin
+            decoded.imm[11:0] = decoded.funct12;
+            case (decoded.funct3) 
+                `func3_lw: begin // ADD/SUB // TODO account for sub option too
+                    decoded.cl.alu_imm_in = True;
+                    decoded.cl.alu_add    = True;
+                    decoded.cl.data_read  = True;
+                    decoded.cl.rf_update  = True;
+                end
+                default: begin  // TODO add other instructions
+                    // not supported, so stop hart
+                    decoded.need_to_invalidate = True;
+                end
+            endcase
+        end
+
+        // STORE ===========
+        `opcode_store: begin
+            decoded.imm[4:0]  = decoded.rd;
+            decoded.imm[11:5] = decoded.funct7;
+            case (decoded.funct3) 
+                `func3_sw: begin // ADD/SUB // TODO account for sub option too
+                    decoded.cl.alu_imm_in = True;
+                    decoded.cl.alu_add    = True;
+                    decoded.cl.data_write = True;
+                end
+                default: begin  // TODO add other instructions
+                    // not supported, so stop hart
+                    decoded.need_to_invalidate = True;
+                end
+            endcase
+        end
+
+        // OP_IMM ==========
+        `opcode_opimm: begin
+            decoded.imm[11:0] = decoded.funct12;
+            case (decoded.funct3) 
+                `func3_addsub: begin // ADD/SUB // TODO account for sub option too
+                    decoded.cl.alu_imm_in = True;
+                    decoded.cl.alu_add    = True;
+                    decoded.cl.rf_update  = True;
+                end
+                default: begin  // TODO add other instructions
+                    // not supported, so stop hart
+                    decoded.need_to_invalidate = True;
+                end
+            endcase
+        end
+
+        // OP ===========
+        `opcode_op: begin
+            case (decoded.funct3) 
+                `func3_addsub: begin // ADD/SUB // TODO account for sub option too
+                    decoded.cl.alu_add    = True;
+                    decoded.cl.rf_update  = True;
+                end
+                default: begin  // TODO add other instructions
+                    // not supported, so stop hart
+                    decoded.need_to_invalidate = True;
+                end
+            endcase
+        end
+
+        // OTHER OPCODE ==========
+        default: begin // TODO add other instructions
+            // Not supported, so stop hart
+            decoded.need_to_invalidate = True;
+        end  
+        
+    endcase
+
+    // TODO CREDIT END: DECODE LOGIC FROM CLARVI
+
+
+    decoded.rfrs1 = case (decoded.rs1)
+        0: 0;
+        1: rf.r1 ;
+        2: rf.r2 ;
+        3: rf.r3 ;
+        4: rf.r4 ;
+        5: rf.r5 ;
+        6: rf.r6 ;
+        7: rf.r7 ;
+        8: rf.r8 ;
+        9: rf.r9 ;
+        10: rf.r10 ;
+        11: rf.r11 ;
+        12: rf.r12 ;
+        13: rf.r13 ;
+        14: rf.r14 ;
+        15: rf.r15 ;
+        16: rf.r16 ;
+        17: rf.r17 ;
+        18: rf.r18 ;
+        19: rf.r19 ;
+        20: rf.r20 ;
+        21: rf.r21 ;
+        22: rf.r22 ;
+        23: rf.r23 ;
+        24: rf.r24 ;
+        25: rf.r25 ;
+        26: rf.r26 ;
+        27: rf.r27 ;
+        28: rf.r28 ;
+        29: rf.r29 ;
+        30: rf.r30 ;
+        31: rf.r31 ;
+    endcase ;
+
+    decoded.rfrs2 = case (decoded.rs2)
+        0: 0;
+        1: rf.r1 ;
+        2: rf.r2 ;
+        3: rf.r3 ;
+        4: rf.r4 ;
+        5: rf.r5 ;
+        6: rf.r6 ;
+        7: rf.r7 ;
+        8: rf.r8 ;
+        9: rf.r9 ;
+        10: rf.r10 ;
+        11: rf.r11 ;
+        12: rf.r12 ;
+        13: rf.r13 ;
+        14: rf.r14 ;
+        15: rf.r15 ;
+        16: rf.r16 ;
+        17: rf.r17 ;
+        18: rf.r18 ;
+        19: rf.r19 ;
+        20: rf.r20 ;
+        21: rf.r21 ;
+        22: rf.r22 ;
+        23: rf.r23 ;
+        24: rf.r24 ;
+        25: rf.r25 ;
+        26: rf.r26 ;
+        27: rf.r27 ;
+        28: rf.r28 ;
+        29: rf.r29 ;
+        30: rf.r30 ;
+        31: rf.r31 ;
+    endcase ;
+
+    return decoded;
+endfunction
+
 
 endpackage
