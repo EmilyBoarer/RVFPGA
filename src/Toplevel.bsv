@@ -57,11 +57,18 @@ module mkToplevel();
     mkConnection(s_exec.get_valid,    s_datmem.put_valid );
     mkConnection(s_exec.get_pc,       s_datmem.put_pc    );
     mkConnection(s_exec.get_rf,       s_datmem.put_rf    );
+
+    mkConnection(s_exec.get_rd,       s_datmem.put_rd    );
+    mkConnection(s_exec.get_ctrl,     s_datmem.put_ctrl  );
+
+    mkConnection(s_exec.get_rfrs2,    s_datmem.put_rfrs2 );
+    mkConnection(s_exec.get_alu_result,   s_datmem.put_alu_result);
     
     // Connect Data Memory -> RF Update
     mkConnection(s_datmem.get_valid,  s_rfup.put_valid   );
     mkConnection(s_datmem.get_pc,     s_rfup.put_pc      );
     mkConnection(s_datmem.get_rf,     s_rfup.put_rf      );
+    
     
     // Connect RF Update -> Control
     mkConnection(s_rfup.get_valid,    s_control.put_valid);
