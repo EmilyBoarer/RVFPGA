@@ -26,9 +26,16 @@ module mkFetch(FetchIfc);
     Reg#(PC_T) pc <- mkReg(0);
     Reg#(RF_T) rf <- mkReg(unpack(0));
 
+    Reg#(Word_T) instr <- mkReg(0);
+
     interface Put put_valid;
         method Action put (Valid_T newvalid);
             valid <= newvalid;
+            if (newvalid != 0) begin
+                instr <= 32'b00000000000100101000001010010011; // ADDI r7 r7 1 (r7 = r7 + 1)  7=00101 // sample test instruction
+            end else begin
+                instr <= 0;
+            end
         endmethod
     endinterface
     interface Get get_valid;
@@ -64,7 +71,7 @@ module mkFetch(FetchIfc);
 
     interface Get get_instr;
         method ActionValue#(Bit#(32)) get ();
-            return 32'b00000000000100101000001010010011; // ADDI r7 r7 1 (r7 = r7 + 1)  7=00101 // sample test instruction
+            return instr;
         endmethod
     endinterface
 

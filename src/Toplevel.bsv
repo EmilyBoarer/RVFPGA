@@ -45,6 +45,13 @@ module mkToplevel();
     mkConnection(s_decode.get_valid,  s_exec.put_valid   );
     mkConnection(s_decode.get_pc,     s_exec.put_pc      );
     mkConnection(s_decode.get_rf,     s_exec.put_rf      );
+
+    mkConnection(s_decode.get_rd,     s_exec.put_rd      );
+    mkConnection(s_decode.get_ctrl,   s_exec.put_ctrl    );
+    mkConnection(s_decode.get_rfrs2,  s_exec.put_rfrs2   );
+
+    mkConnection(s_decode.get_rfrs1,  s_exec.put_rfrs1   );
+    mkConnection(s_decode.get_imm,    s_exec.put_imm     );
     
     // Connect Execute -> Data Memory
     mkConnection(s_exec.get_valid,    s_datmem.put_valid );

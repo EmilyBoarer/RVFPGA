@@ -18,11 +18,11 @@ interface DecodeIfc; // using the same types as the rest of the system
 
     interface Put#(Bit#(32)) put_instr;
 
-    interface Get#(Bit#(5))  get_rd;
-    interface Get#(Word_T) get_rfrs1;
-    interface Get#(Word_T) get_rfrs2;
-    interface Get#(Word_T) get_imm;
-    interface Get#(CL_T)   get_ctrl;
+    interface Get#(Bit#(5)) get_rd;
+    interface Get#(Word_T)  get_rfrs1;
+    interface Get#(Word_T)  get_rfrs2;
+    interface Get#(Word_T)  get_imm;
+    interface Get#(CL_T)    get_ctrl;
 
     // TODO get control lines
 endinterface
@@ -94,12 +94,6 @@ module mkDecode(DecodeIfc);
             Bit#(7)  funct7  = instr[31:25];
             Bit#(12) funct12 = instr[31:20];
 
-            // This is used to get around BSV scheduling issues when assigning directly to 'valid'
-            need_to_invalidate <= False;
-
-            // invalidate hart if not a valid instruction
-            if (opext != 2'b11) need_to_invalidate <= True; // I expect this assignment to valid to break things if Fetch is implemented properly
-
             // since BSC doesn't allow modification of a struct's field when in a register, create a new
             // instance of the struct and then update that in the code, finally assigning this new instance
             // to the register
@@ -112,6 +106,16 @@ module mkDecode(DecodeIfc);
             cl.data_read  = False;
             cl.data_write = False;
             cl.rf_update  = False;
+
+            let immediate = imm;
+
+            // This is used to get around BSV scheduling issues when assigning directly to 'valid'
+            let n_t_invalidate = False;
+
+
+            // invalidate hart if not a valid instruction
+            if (opext != 2'b11) n_t_invalidate = True; // I expect this assignment to valid to break things if Fetch is implemented properly
+
 
             // define binary translations to make it easier to read the decoding code
             `define opcode_branch 5'b11000
@@ -132,10 +136,10 @@ module mkDecode(DecodeIfc);
             case (opcode)
                 // BRANCH ===========
                 `opcode_branch: begin
-                    imm[4:1]  <= instr[11:8];
-                    imm[10:5] <= instr[30:25];
-                    imm[11]   <= instr[7];
-                    imm[12]   <= instr[31];
+                    immediate[4:1]  = instr[11:8];
+                    immediate[10:5] = instr[30:25];
+                    immediate[11]   = instr[7];
+                    immediate[12]   = instr[31];
                     case (funct3) 
                         `func3_beq: begin // ADD/SUB // TODO account for sub option too
                             cl.alu_pc_in  = True;
@@ -145,14 +149,14 @@ module mkDecode(DecodeIfc);
                         end
                         default: begin  // TODO add other instructions
                             // not supported, so stop hart
-                            need_to_invalidate <= True;
+                            n_t_invalidate = True;
                         end
                     endcase                    
                 end
 
                 // LOAD ===========
                 `opcode_load: begin
-                    imm[11:0] <= funct12;
+                    immediate[11:0] = funct12;
                     case (funct3) 
                         `func3_lw: begin // ADD/SUB // TODO account for sub option too
                             cl.alu_imm_in = True;
@@ -162,15 +166,15 @@ module mkDecode(DecodeIfc);
                         end
                         default: begin  // TODO add other instructions
                             // not supported, so stop hart
-                            need_to_invalidate <= True;
+                            n_t_invalidate = True;
                         end
                     endcase
                 end
 
                 // STORE ===========
                 `opcode_store: begin
-                    imm[4:0]  <= rd;
-                    imm[11:5] <= funct7;
+                    immediate[4:0]  = rd;
+                    immediate[11:5] = funct7;
                     case (funct3) 
                         `func3_sw: begin // ADD/SUB // TODO account for sub option too
                             cl.alu_imm_in = True;
@@ -179,14 +183,14 @@ module mkDecode(DecodeIfc);
                         end
                         default: begin  // TODO add other instructions
                             // not supported, so stop hart
-                            need_to_invalidate <= True;
+                            n_t_invalidate = True;
                         end
                     endcase
                 end
 
                 // OP_IMM ==========
                 `opcode_opimm: begin
-                    imm[11:0] <= funct12;
+                    immediate[11:0] = funct12;
                     case (funct3) 
                         `func3_addsub: begin // ADD/SUB // TODO account for sub option too
                             cl.alu_imm_in = True;
@@ -195,7 +199,7 @@ module mkDecode(DecodeIfc);
                         end
                         default: begin  // TODO add other instructions
                             // not supported, so stop hart
-                            need_to_invalidate <= True;
+                            n_t_invalidate = True;
                         end
                     endcase
                 end
@@ -209,7 +213,7 @@ module mkDecode(DecodeIfc);
                         end
                         default: begin  // TODO add other instructions
                             // not supported, so stop hart
-                            need_to_invalidate <= True;
+                            n_t_invalidate = True;
                         end
                     endcase
                 end
@@ -217,7 +221,7 @@ module mkDecode(DecodeIfc);
                 // OTHER OPCODE ==========
                 default: begin // TODO add other instructions
                     // Not supported, so stop hart
-                    need_to_invalidate <= True;
+                    n_t_invalidate = True;
                 end  
                 
             endcase
@@ -225,6 +229,8 @@ module mkDecode(DecodeIfc);
             // TODO CREDIT END: DECODE LOGIC FROM CLARVI
 
             controllines <= cl;
+            need_to_invalidate <= n_t_invalidate;
+            imm <= immediate;
 
             rfrs1 <= case (rs1)
                 0: 0;
