@@ -68,7 +68,10 @@ module mkToplevel();
     mkConnection(s_datmem.get_valid,  s_rfup.put_valid   );
     mkConnection(s_datmem.get_pc,     s_rfup.put_pc      );
     mkConnection(s_datmem.get_rf,     s_rfup.put_rf      );
-    
+
+    mkConnection(s_datmem.get_rd,     s_rfup.put_rd      );
+    mkConnection(s_datmem.get_value,  s_rfup.put_value   );
+    mkConnection(s_datmem.get_ctrl,   s_rfup.put_ctrl    );
     
     // Connect RF Update -> Control
     mkConnection(s_rfup.get_valid,    s_control.put_valid);

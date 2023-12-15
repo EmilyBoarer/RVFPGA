@@ -32,7 +32,7 @@ module mkFetch(FetchIfc);
         method Action put (Valid_T newvalid);
             valid <= newvalid;
             if (newvalid != 0) begin
-                instr <= 32'b00000000000100101000001010010011; // ADDI r7 r7 1 (r7 = r7 + 1)  7=00101 // sample test instruction
+                instr <= 32'b00000000000100001000000010010011; // ADDI r7 r7 1 (r7 = r7 + 1)  7=00101 // sample test instruction
             end else begin
                 instr <= 0;
             end
