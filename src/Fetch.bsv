@@ -6,6 +6,8 @@ import Types::*;
 export FetchIfc (..);
 export mkFetch;
 
+import BlockRam:: *;
+
 interface FetchIfc; // using the same types as the rest of the system
     interface Put#(Valid_T) put_valid;
     interface Get#(Valid_T) get_valid;
@@ -17,6 +19,8 @@ interface FetchIfc; // using the same types as the rest of the system
     interface Get#(RF_T) get_rf;
 
     interface Get#(Word_T) get_instr;
+
+    interface BlockRam#(Bit#(9), Bit#(32)) instrMem;
 endinterface
 
 // This stage is responsible for fetching the correct instruction from program memory according to the PC (and valid?)
@@ -25,6 +29,10 @@ module mkFetch(FetchIfc);
     Reg#(Valid_T) valid <- mkReg(0);
     Reg#(PC_T) pc <- mkReg(0);
     Reg#(RF_T) rf <- mkReg(unpack(0));
+
+    rule fetchinstruction;
+        instrMem.read(0); // TODO truncate PC & deal with hart indexes
+    endrule
 
     interface Put put_valid;
         method Action put (Valid_T newvalid);
@@ -61,9 +69,9 @@ module mkFetch(FetchIfc);
         endmethod
     endinterface
 
-
     interface Get get_instr;
         method ActionValue#(Bit#(32)) get ();
+            // the following result will never be used:
             if (valid != 0) begin
                 return 32'b00000000000100001000000010010011; // ADDI r7 r7 1 (r7 = r7 + 1)  7=00101 // sample test instruction
             end else begin

@@ -12,6 +12,7 @@ import Exec::*;
 import Datmem::*;
 import Rfupdate::*;
 
+import BlockRam::*;
 
 // Pipeline overview:
 //    Control -> Fetch -> Decode -> Execute -> Data Memory R/W -> RF Update -> [repeat] 
@@ -19,11 +20,17 @@ import Rfupdate::*;
 
 module mkToplevel();
 
+    // instruction memory (modified from https://github.com/POETSII/twine/blob/master/rtl/Core.bsv)
+    BlockRamOpts instrMemOpts = defaultBlockRamOpts;
+    instrMemOpts.initFile = Valid("instrbram.txt"); // TODO I **ASSUME** this is a file name??
+    instrMemOpts.registerDataOut = False;
+    BlockRam#(Bit#(9), Bit#(32)) instrMem <- mkBlockRamOpts(instrMemOpts);
+
     // Instantiate all the stages
     // NB: "s_" is short for "stage_"
     ControlIfc  s_control <- mkControl();
-    FetchIfc    s_fetch   <- mkFetch();
-    DecodeIfc   s_decode  <- mkDecode();
+    FetchIfc    s_fetch   <- mkFetch(instrMem);
+    DecodeIfc   s_decode  <- mkDecode(instrMem);
     ExecIfc     s_exec    <- mkExec();
     DatmemIfc   s_datmem  <- mkDatmem();
     RfupdateIfc s_rfup    <- mkRfupdate();
@@ -78,15 +85,6 @@ module mkToplevel();
     mkConnection(s_rfup.get_pc,       s_control.put_pc   );
     mkConnection(s_rfup.get_rf,       s_control.put_rf   );
 
-    // TODO: connect once implemented:
-    // Connect rd
-    // Connect RF[rs1]
-    // Connect RF[rs2]
-    // Connect IMM
-    // Connect ALU_OUT
-    // Connect VALUE
-
-    // Connect _all the instruction lines_
 
 endmodule
 
