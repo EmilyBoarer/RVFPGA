@@ -6,6 +6,8 @@ import Types::*;
 export FetchIfc (..);
 export mkFetch;
 
+import AvalonMaster :: *;
+
 interface FetchIfc; // using the same types as the rest of the system
     interface Put#(Valid_T) put_valid;
     interface Get#(Valid_T) get_valid;
@@ -17,6 +19,8 @@ interface FetchIfc; // using the same types as the rest of the system
     interface Get#(RF_T) get_rf;
 
     interface Get#(Word_T) get_instr;
+    
+    interface AvalonMaster instrMaster;
 endinterface
 
 // This stage is responsible for fetching the correct instruction from program memory according to the PC (and valid?)
@@ -25,6 +29,13 @@ module mkFetch(FetchIfc);
     Reg#(Valid_T) valid <- mkReg(0);
     Reg#(PC_T) pc <- mkReg(0);
     Reg#(RF_T) rf <- mkReg(unpack(0));
+
+    rule fetchinstruction;
+        if (master.canPutRead) begin
+            master.put(valid, false, pc, 0, 4'b1111); // thread id (= valid), is write, address, write data, byte en
+            // TODO how long does fetch take? need to be slow enough to not crash!
+        end // TODO else valid = 0; ??
+    endrule
 
     interface Put put_valid;
         method Action put (Valid_T newvalid);

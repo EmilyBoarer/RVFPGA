@@ -12,17 +12,25 @@ import Exec::*;
 import Datmem::*;
 import Rfupdate::*;
 
+// for memories:
+import AvalonMaster :: *;
+
 
 // Pipeline overview:
 //    Control -> Fetch -> Decode -> Execute -> Data Memory R/W -> RF Update -> [repeat] 
 
 
+// TODO / NB: example Core has an interface with link to avalonmaster --- necessary to hook components up to each other
+
 module mkToplevel();
+
+    // Avalon master interface - for instruction memory
+    AvalonMaster instrMaster <- mkAvalonMaster;   
 
     // Instantiate all the stages
     // NB: "s_" is short for "stage_"
     ControlIfc  s_control <- mkControl();
-    FetchIfc    s_fetch   <- mkFetch();
+    FetchIfc    s_fetch   <- mkFetch(instrMaster);
     DecodeIfc   s_decode  <- mkDecode();
     ExecIfc     s_exec    <- mkExec();
     DatmemIfc   s_datmem  <- mkDatmem();
@@ -77,16 +85,6 @@ module mkToplevel();
     mkConnection(s_rfup.get_valid,    s_control.put_valid);
     mkConnection(s_rfup.get_pc,       s_control.put_pc   );
     mkConnection(s_rfup.get_rf,       s_control.put_rf   );
-
-    // TODO: connect once implemented:
-    // Connect rd
-    // Connect RF[rs1]
-    // Connect RF[rs2]
-    // Connect IMM
-    // Connect ALU_OUT
-    // Connect VALUE
-
-    // Connect _all the instruction lines_
 
 endmodule
 
