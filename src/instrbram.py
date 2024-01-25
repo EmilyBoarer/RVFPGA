@@ -104,7 +104,7 @@ fib_instrs = [
 bram_writes_test_instrs = [
     instr_gen(opcode=OPI,   funct3=ADDI, rd=3, rs1=3, I_imm=1),
     instr_gen(opcode=STORE, funct3=STORE_WORD, rs1=3, rs2=3, S_imm=0),
-    instr_gen(opcode=BRANCH,funct3=BRANCH_EQ, rs1=0, rs2=0, B_imm=-4),
+    instr_gen(opcode=BRANCH,funct3=BRANCH_EQ, rs1=0, rs2=0, B_imm=-4*2),
 ]
 
 

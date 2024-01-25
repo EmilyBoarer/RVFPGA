@@ -74,7 +74,6 @@ module mkDecode#(BlockRam#(Bit#(9), Bit#(32)) instrMem)(DecodeIfc);
             end else begin
                 instr <= 255; // TODO replace with a NOP?? or stall-like thing??
             end
-            // instr <= newinstr;
         endmethod
     endinterface
 
@@ -199,10 +198,14 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
             decoded.imm[10:5] = instr[30:25];
             decoded.imm[11]   = instr[7];
             decoded.imm[12]   = instr[31];
+            if (instr[31] == 1) begin 
+                decoded.imm[31:13] = 19'b1111111111111111111; // sign extend the immediate
+            end
             case (decoded.funct3) 
                 `func3_beq: begin // ADD/SUB // TODO account for sub option too
                     decoded.cl.alu_pc_in  = True;
                     decoded.cl.alu_imm_in = True;
+                    decoded.cl.alu_add    = True;
                     decoded.cl.alu_br_eq  = True;
                     decoded.cl.alu_pc_out = True;
                 end
@@ -216,6 +219,7 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
         // LOAD ===========
         `opcode_load: begin
             decoded.imm[11:0] = decoded.funct12;
+            // TODO sign extend the immediate
             case (decoded.funct3) 
                 `func3_lw: begin // ADD/SUB // TODO account for sub option too
                     decoded.cl.alu_imm_in = True;
@@ -234,6 +238,7 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
         `opcode_store: begin
             decoded.imm[4:0]  = decoded.rd;
             decoded.imm[11:5] = decoded.funct7;
+            // TODO sign extend the immediate
             case (decoded.funct3) 
                 `func3_sw: begin // ADD/SUB // TODO account for sub option too
                     decoded.cl.alu_imm_in = True;

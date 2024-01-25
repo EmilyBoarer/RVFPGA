@@ -21,12 +21,16 @@ add wave -position insertpoint \
   /toptoplevel/toplevel/s_rfup_valid                 \
   /toptoplevel/toplevel/s_control_pc_valid                 \
   /toptoplevel/toplevel/s_control_pc_register                 \
-  /toptoplevel/toplevel/s_fetch_pc_register                 \
-  /toptoplevel/toplevel/s_decode_pc_register                 \
-  /toptoplevel/toplevel/s_exec_pc_register                 \
-  /toptoplevel/toplevel/s_datmem_pc_register                 \
-  /toptoplevel/toplevel/s_rfup_pc_register                 \
-  /toptoplevel/toplevel/s_exec_valid_register                 \
+  /toptoplevel/toplevel/s_fetch_pc                 \
+  /toptoplevel/toplevel/s_decode_pc                 \
+  /toptoplevel/toplevel/s_exec_pc                 \
+  /toptoplevel/toplevel/s_datmem_pc                 \
+  /toptoplevel/toplevel/s_rfup_pc                 \
+  /toptoplevel/CLK \
+  /toptoplevel/toplevel/s_fetch_pc                 \
+  /toptoplevel/toplevel/s_decode_pc                 \
+  /toptoplevel/toplevel/s_decode_instr                 \
+  /toptoplevel/toplevel/s_exec_valid                 \
   /toptoplevel/toplevel/s_exec_rd                 \
   /toptoplevel/toplevel/s_exec_rfrs1                 \
   /toptoplevel/toplevel/s_exec_rfrs2                 \

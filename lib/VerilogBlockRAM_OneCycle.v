@@ -40,7 +40,7 @@ module VerilogBlockRAM_OneCycle
    (* ramstyle = "m20k" *) reg [DATA_WIDTH-1:0]     mem [2**ADDR_WIDTH-1:0];
    initial $readmemh(PRELOADFILE, mem);
 
-   always @ (posedge CLK) begin
+   always @ (negedge CLK) begin // switched to negedge
       if (WE)
         mem[WR_ADDR] = DI;  // should trigger coherent read
       DO <= mem[RD_ADDR];
