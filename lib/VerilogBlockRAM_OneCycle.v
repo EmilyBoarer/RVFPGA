@@ -1,4 +1,5 @@
 /*
+ * Modified by Emily Boarer to preload mem with values, 2024
  * Copyright (c) 2022 Simon W. Moore
  * All rights reserved.
  *
@@ -26,7 +27,7 @@
 
 
 module VerilogBlockRAM_OneCycle
-  #(parameter DATA_WIDTH=1, parameter ADDR_WIDTH=1)
+  #(parameter DATA_WIDTH=1, parameter ADDR_WIDTH=1, parameter PRELOADFILE="instrbram.txt")
    (
     output reg [DATA_WIDTH-1:0] DO,
     output reg          DO_VALID,
@@ -37,6 +38,7 @@ module VerilogBlockRAM_OneCycle
    
    // (* ramstyle = "m20k" *)  - pragma that could be tried
    (* ramstyle = "m20k" *) reg [DATA_WIDTH-1:0]     mem [2**ADDR_WIDTH-1:0];
+   initial $readmemh(PRELOADFILE, mem);
 
    always @ (posedge CLK) begin
       if (WE)
