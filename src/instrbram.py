@@ -125,4 +125,4 @@ def hexx(i):
 with open("instrbram.txt", "w") as f:
     f.writelines("\n".join([hexx(i) for i in instrs]))
 
-
+## TODO write to data memory bram file too (once more complicated programs with starting data) ?

@@ -43,8 +43,7 @@ module mkFetch#(BlockRam#(Bit#(9), Bit#(32)) instrMem)(FetchIfc);
     interface Put put_pc;
         method Action put (PC_T newpc);
             pc <= newpc;
-            // TODO confirm location within pipeline that this should happen???
-            instrMem.read(truncate(unpack(pc)[31:2])); // TODO this is just a placeholder read // TODO initiate from proper PC,valid, etc..
+            instrMem.read(truncate(unpack(pc)[31:2]));
         endmethod
     endinterface
     interface Get get_pc;

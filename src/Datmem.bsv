@@ -115,7 +115,7 @@ module mkDatmem#(BlockRamTrueDualPort#(Bit#(9), Bit#(32)) dataMem)(DatmemIfc);
     interface Get get_value;
         method ActionValue#(Word_T) get ();
             if (controllines.data_write) begin
-                // write to data memory // TODO enable datamem port A
+                // write to data memory
                 dataMem.putA(True, False, truncate(unpack(alu_result)), rfrs2);
             end
             if (controllines.data_read) begin
