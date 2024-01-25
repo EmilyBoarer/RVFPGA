@@ -3,6 +3,8 @@ package Datmem;
 import GetPut::*;
 import Types::*;
 
+import BlockRAMv::*;
+
 export DatmemIfc (..);
 export mkDatmem;
 
@@ -26,7 +28,7 @@ interface DatmemIfc; // using the same types as the rest of the system
     interface Get#(CL_T)    get_ctrl;
 endinterface
 
-module mkDatmem(DatmemIfc);
+module mkDatmem#(BlockRamTrueDualPort#(Bit#(9), Bit#(32)) dataMem)(DatmemIfc);
     Reg#(Valid_T) valid <- mkReg(0);
     Reg#(PC_T) pc <- mkReg(0);
     Reg#(RF_T) rf <- mkReg(unpack(0));
@@ -113,7 +115,8 @@ module mkDatmem(DatmemIfc);
     interface Get get_value;
         method ActionValue#(Word_T) get ();
             if (controllines.data_write) begin
-                // TODO write to data memory
+                // write to data memory // TODO enable datamem port A
+                dataMem.putA(True, False, truncate(unpack(alu_result)), rfrs2);
             end
             if (controllines.data_read) begin
                 // TODO read from data memory

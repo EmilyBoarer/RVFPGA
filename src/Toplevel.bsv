@@ -25,13 +25,16 @@ module mkToplevel();
     // init instruction memory
     BlockRam#(Bit#(9), Bit#(32)) instrMem <- mkBlockRAM();
 
+    // init data memory
+    BlockRamTrueDualPort#(Bit#(9), Bit#(32)) dataMem <- mkDualPortBlockRAM();
+
     // Instantiate all the stages
     // NB: "s_" is short for "stage_"
     ControlIfc  s_control <- mkControl();
-    FetchIfc    s_fetch   <- mkFetch(instrMem); // requests instrmem "read"
-    DecodeIfc   s_decode  <- mkDecode(instrMem); // completes instrmem "read"
-    ExecIfc     s_exec    <- mkExec();
-    DatmemIfc   s_datmem  <- mkDatmem();
+    FetchIfc    s_fetch   <- mkFetch(instrMem);  // requests  instrmem reads
+    DecodeIfc   s_decode  <- mkDecode(instrMem); // completes instrmem reads
+    ExecIfc     s_exec    <- mkExec();           // requests  datamem  reads
+    DatmemIfc   s_datmem  <- mkDatmem(dataMem);  // requests  datamem  writes at start of cycle. completes reads at (end of ?) cycle
     RfupdateIfc s_rfup    <- mkRfupdate();
     // TODO handle when instruction fetch for 1st instruction after enabling without writing random things to memory
 
