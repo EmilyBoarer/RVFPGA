@@ -4,6 +4,7 @@ vlib work
 vlog toptoplevel.sv
 vlog verilog/mkToplevel.v
 vlog lib/VerilogBlockRAM_OneCycle.v
+vlog lib/VerilogBlockRAM_TrueDualPort_OneCycle.v
 # point the simulator at the compiled design
 vsim work.toptoplevel
 # add waveforms to the "Wave" pane
@@ -36,6 +37,10 @@ add wave -position insertpoint \
   /toptoplevel/toplevel/instrMem_ram/DO_VALID\
   /toptoplevel/toplevel/instrMem_ram/RD_ADDR\
   /toptoplevel/toplevel/instrMem_ram/RE\
+  /toptoplevel/toplevel/dataMem_ram/ram[0]\
+  /toptoplevel/toplevel/dataMem_ram/ram[1]\
+  /toptoplevel/toplevel/dataMem_ram/ram[2]\
+  /toptoplevel/toplevel/dataMem_ram/ram[3]\
   /toptoplevel/CLK
 # run simulation for 200 nanoseconds
 run 100 ps
