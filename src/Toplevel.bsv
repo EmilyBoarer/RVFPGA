@@ -13,17 +13,23 @@ import Datmem::*;
 import Rfupdate::*;
 
 
+import BlockRAMv::*;
+
+
 // Pipeline overview:
 //    Control -> Fetch -> Decode -> Execute -> Data Memory R/W -> RF Update -> [repeat] 
 
 
 module mkToplevel();
 
+    // init instruction memory
+    BlockRam#(Bit#(9), Bit#(32)) instrMem <- mkBlockRAM();
+
     // Instantiate all the stages
     // NB: "s_" is short for "stage_"
     ControlIfc  s_control <- mkControl();
-    FetchIfc    s_fetch   <- mkFetch();
-    DecodeIfc   s_decode  <- mkDecode();
+    FetchIfc    s_fetch   <- mkFetch(instrMem); // requests instrmem "read"
+    DecodeIfc   s_decode  <- mkDecode(instrMem); // completes instrmem "read"
     ExecIfc     s_exec    <- mkExec();
     DatmemIfc   s_datmem  <- mkDatmem();
     RfupdateIfc s_rfup    <- mkRfupdate();
@@ -78,15 +84,6 @@ module mkToplevel();
     mkConnection(s_rfup.get_pc,       s_control.put_pc   );
     mkConnection(s_rfup.get_rf,       s_control.put_rf   );
 
-    // TODO: connect once implemented:
-    // Connect rd
-    // Connect RF[rs1]
-    // Connect RF[rs2]
-    // Connect IMM
-    // Connect ALU_OUT
-    // Connect VALUE
-
-    // Connect _all the instruction lines_
 
 endmodule
 

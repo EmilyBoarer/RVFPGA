@@ -3,6 +3,8 @@ package Fetch;
 import GetPut::*;
 import Types::*;
 
+import BlockRAMv::*;
+
 export FetchIfc (..);
 export mkFetch;
 
@@ -16,12 +18,12 @@ interface FetchIfc; // using the same types as the rest of the system
     interface Put#(RF_T) put_rf;
     interface Get#(RF_T) get_rf;
 
-    interface Get#(Word_T) get_instr;
+    interface Get#(Bool) get_instr;
 endinterface
 
 // This stage is responsible for fetching the correct instruction from program memory according to the PC (and valid?)
 
-module mkFetch(FetchIfc);
+module mkFetch#(BlockRam#(Bit#(9), Bit#(32)) instrMem)(FetchIfc);
     Reg#(Valid_T) valid <- mkReg(0);
     Reg#(PC_T) pc <- mkReg(0);
     Reg#(RF_T) rf <- mkReg(unpack(0));
@@ -41,6 +43,8 @@ module mkFetch(FetchIfc);
     interface Put put_pc;
         method Action put (PC_T newpc);
             pc <= newpc;
+            // TODO confirm location within pipeline that this should happen???
+            instrMem.read(truncate(unpack(pc))); // TODO this is just a placeholder read // TODO initiate from proper PC,valid, etc..
         endmethod
     endinterface
     interface Get get_pc;
@@ -63,11 +67,13 @@ module mkFetch(FetchIfc);
 
 
     interface Get get_instr;
-        method ActionValue#(Bit#(32)) get ();
+        method ActionValue#(Bool) get ();
             if (valid != 0) begin
-                return 32'b00000000000100001000000010010011; // ADDI r7 r7 1 (r7 = r7 + 1)  7=00101 // sample test instruction
+                // return 32'b00000000000100001000000010010011; // ADDI r7 r7 1 (r7 = r7 + 1)  7=00101 // sample test instruction
+                return True;
             end else begin
-                return 0;
+                // return 0;
+                return False;
             end
         endmethod
     endinterface

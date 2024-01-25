@@ -3,6 +3,8 @@ package Decode;
 import GetPut::*;
 import Types::*;
 
+import BlockRAMv::*;
+
 export DecodeIfc (..);
 export mkDecode;
 
@@ -16,17 +18,16 @@ interface DecodeIfc; // using the same types as the rest of the system
     interface Put#(RF_T) put_rf;
     interface Get#(RF_T) get_rf;
 
-    interface Put#(Bit#(32)) put_instr;
+    interface Put#(Bool) put_instr;
 
     interface Get#(Bit#(5)) get_rd;
     interface Get#(Word_T)  get_rfrs1;
     interface Get#(Word_T)  get_rfrs2;
     interface Get#(Word_T)  get_imm;
     interface Get#(CL_T)    get_ctrl;
-
 endinterface
 
-module mkDecode(DecodeIfc);
+module mkDecode#(BlockRam#(Bit#(9), Bit#(32)) instrMem)(DecodeIfc);
     Reg#(Valid_T) valid <- mkReg(0);
     Reg#(PC_T) pc <- mkReg(0);
     Reg#(RF_T) rf <- mkReg(unpack(0));
@@ -67,8 +68,13 @@ module mkDecode(DecodeIfc);
 
 
     interface Put put_instr;
-        method Action put (Bit#(32) newinstr);
-            instr <= newinstr;
+        method Action put (Bool doFetch);
+            if (instrMem.dataOutValid && doFetch) begin
+                instr <= instrMem.dataOut; // TODO check this works properly
+            end else begin
+                instr <= 255; // TODO replace with a NOP?? or stall-like thing??
+            end
+            // instr <= newinstr;
         endmethod
     endinterface
 
