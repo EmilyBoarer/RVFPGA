@@ -70,7 +70,6 @@ module mkExec(ExecIfc);
             end else begin
                 return pc; // Do nothing if invalid
             end
-            // TODO update this!
         endmethod
     endinterface
 

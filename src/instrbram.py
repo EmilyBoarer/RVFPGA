@@ -87,11 +87,11 @@ fib_instrs = [
 
     instr_gen(opcode=OP,    funct3=ADD,  rd=4, rs1=2, rs2=3  ),
     instr_gen(opcode=STORE, funct3=STORE_WORD, rs1=1, rs2=4, S_imm=0),
-    instr_gen(opcode=OPI,   funct3=ADDI, rd=1, rs1=1, I_imm=4),
+    instr_gen(opcode=OPI,   funct3=ADDI, rd=1, rs1=1, I_imm=1),
     instr_gen(opcode=OPI,   funct3=ADDI, rd=2, rs1=3, I_imm=0),
     instr_gen(opcode=OPI,   funct3=ADDI, rd=3, rs1=4, I_imm=0),
     instr_gen(opcode=BRANCH,funct3=BRANCH_EQ,  rs1=1, rs2=5, B_imm=4),
-    instr_gen(opcode=BRANCH,funct3=BRANCH_EQ,  rs1=0, rs2=0, B_imm=24), # TODO get neg imms working
+    instr_gen(opcode=BRANCH,funct3=BRANCH_EQ,  rs1=0, rs2=0, B_imm=-6*4),
 
     instr_gen(opcode=OPI,   funct3=SLTI),
     instr_gen(opcode=BRANCH,funct3=BRANCH_EQ, rs1=0, rs2=0, B_imm=0), # -8 in two's compliment
@@ -112,7 +112,7 @@ bram_writes_test_instrs = [
 
 ## todo account for a hart offset for each instruction
 
-instrs = bram_writes_test_instrs
+instrs = fib_instrs
 while len(instrs) < 2**(6+3):
     instrs.append(0)
 

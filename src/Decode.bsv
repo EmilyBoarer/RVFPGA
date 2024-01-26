@@ -219,7 +219,9 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
         // LOAD ===========
         `opcode_load: begin
             decoded.imm[11:0] = decoded.funct12;
-            // TODO sign extend the immediate
+            if (decoded.imm[11] == 1) begin 
+                decoded.imm[31:12] = 20'b11111111111111111111; // sign extend the immediate
+            end
             case (decoded.funct3) 
                 `func3_lw: begin // ADD/SUB // TODO account for sub option too
                     decoded.cl.alu_imm_in = True;
@@ -238,7 +240,9 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
         `opcode_store: begin
             decoded.imm[4:0]  = decoded.rd;
             decoded.imm[11:5] = decoded.funct7;
-            // TODO sign extend the immediate
+            if (decoded.imm[11] == 1) begin 
+                decoded.imm[31:12] = 20'b11111111111111111111; // sign extend the immediate
+            end
             case (decoded.funct3) 
                 `func3_sw: begin // ADD/SUB // TODO account for sub option too
                     decoded.cl.alu_imm_in = True;
@@ -255,6 +259,9 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
         // OP_IMM ==========
         `opcode_opimm: begin
             decoded.imm[11:0] = decoded.funct12;
+            if (decoded.imm[11] == 1) begin 
+                decoded.imm[31:12] = 20'b11111111111111111111; // sign extend the immediate
+            end
             case (decoded.funct3) 
                 `func3_addsub: begin // ADD/SUB // TODO account for sub option too
                     decoded.cl.alu_imm_in = True;
