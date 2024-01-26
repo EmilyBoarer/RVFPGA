@@ -87,7 +87,7 @@ fib_instrs = [
 
     instr_gen(opcode=OP,    funct3=ADD,  rd=4, rs1=2, rs2=3  ),
     instr_gen(opcode=STORE, funct3=STORE_WORD, rs1=1, rs2=4, S_imm=0),
-    instr_gen(opcode=OPI,   funct3=ADDI, rd=1, rs1=1, I_imm=1),
+    instr_gen(opcode=OPI,   funct3=ADDI, rd=1, rs1=1, I_imm=4),
     instr_gen(opcode=OPI,   funct3=ADDI, rd=2, rs1=3, I_imm=0),
     instr_gen(opcode=OPI,   funct3=ADDI, rd=3, rs1=4, I_imm=0),
     instr_gen(opcode=BRANCH,funct3=BRANCH_EQ,  rs1=1, rs2=5, B_imm=4),
@@ -101,20 +101,21 @@ fib_instrs = [
 
 ## 25th Jan: test program to check data memory writes
 ## = infinite loop of adding then storing
+loc = 100 ## place in memory immediately before where things are stored.
 bram_writes_test_instrs = [
-    instr_gen(opcode=OPI,   funct3=ADDI, rd=3, rs1=0, I_imm=100),
-    instr_gen(opcode=OPI,   funct3=ADDI, rd=3, rs1=3, I_imm=1),
+    instr_gen(opcode=OPI,   funct3=ADDI, rd=3, rs1=0, I_imm=loc*4),
+    instr_gen(opcode=OPI,   funct3=ADDI, rd=3, rs1=3, I_imm=4),
     instr_gen(opcode=STORE, funct3=STORE_WORD, rs1=3, rs2=3, S_imm=0),
     instr_gen(opcode=BRANCH,funct3=BRANCH_EQ, rs1=0, rs2=0, B_imm=-4*2),
 ]
 
 ## 26th Jan: test program to check data memory reads (assuming writes)
 ## = infinite loop of loading, adding then storing
-loc = 0 ## place in memory that is used, 1 word here
+loc = 100 ## place in memory that is used, 1 word here
 bram_read_test_instrs = [
-    instr_gen(opcode=LOAD,  funct3=LOAD_WORD, rs1=0, rd=3, I_imm=loc),
+    instr_gen(opcode=LOAD,  funct3=LOAD_WORD, rs1=0, rd=3, I_imm=loc*4),
     instr_gen(opcode=OPI,   funct3=ADDI, rd=3, rs1=3, I_imm=1),
-    instr_gen(opcode=STORE, funct3=STORE_WORD, rs1=0, rs2=3, S_imm=loc),
+    instr_gen(opcode=STORE, funct3=STORE_WORD, rs1=0, rs2=3, S_imm=loc*4),
     instr_gen(opcode=BRANCH,funct3=BRANCH_EQ, rs1=0, rs2=0, B_imm=-4*3),
 ]
 
@@ -128,10 +129,14 @@ instrs = []
 while len(instrs) < 256:
     instrs.append(0)
 #hart1
-instrs += bram_read_test_instrs
+instrs += fib_instrs
 while len(instrs) < 256*2:
     instrs.append(0)
 #hart2
+instrs += bram_read_test_instrs
+while len(instrs) < 256*3:
+    instrs.append(0)
+#hart3
 instrs += bram_writes_test_instrs
 while len(instrs) < 2**(8+4):
     instrs.append(0)

@@ -110,7 +110,7 @@ module mkDatmem#(BlockRamTrueDualPort#(Bit#(9), Bit#(32)) dataMem)(DatmemIfc);
             alu_result <= newalu_result;
             // start read from data memory (to be muxed at start of rfupdate stage)
             if (controllines.data_read) begin
-                dataMem.putB(False, True, truncate(unpack(alu_result)), 0);
+                dataMem.putB(False, True, truncate(unpack(alu_result)[31:2]), 0); // ignore 2 least sig bits since LoadWord
             end
         endmethod
     endinterface
@@ -120,7 +120,7 @@ module mkDatmem#(BlockRamTrueDualPort#(Bit#(9), Bit#(32)) dataMem)(DatmemIfc);
         method ActionValue#(Word_T) get ();
             if (controllines.data_write) begin
                 // write to data memory
-                dataMem.putA(True, False, truncate(unpack(alu_result)), rfrs2);
+                dataMem.putA(True, False, truncate(unpack(alu_result)[31:2]), rfrs2); // ignore 2 least sig bits since StoreWord
             end
             return alu_result; // this is mux-ed with read value in rfupdate stage now (NOT as per euarch-2)
         endmethod
