@@ -23,7 +23,7 @@ endinterface
 
 // This stage is responsible for fetching the correct instruction from program memory according to the PC (and valid?)
 
-module mkFetch#(BlockRam#(Bit#(9), Bit#(32)) instrMem)(FetchIfc);
+module mkFetch#(BlockRam#(Bit#(12), Bit#(32)) instrMem)(FetchIfc);
     Reg#(Valid_T) valid <- mkReg(0);
     Reg#(PC_T) pc <- mkReg(0);
     Reg#(RF_T) rf <- mkReg(unpack(0));
@@ -43,7 +43,10 @@ module mkFetch#(BlockRam#(Bit#(9), Bit#(32)) instrMem)(FetchIfc);
     interface Put put_pc;
         method Action put (PC_T newpc);
             pc <= newpc;
-            instrMem.read(truncate(unpack(pc)[31:2]));
+            Bit#(12) addr;
+            addr[7:0] = truncate(unpack(pc)[31:2]);
+            addr[11:8] = unpack(valid);
+            instrMem.read(addr);
         endmethod
     endinterface
     interface Get get_pc;

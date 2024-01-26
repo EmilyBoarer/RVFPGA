@@ -23,7 +23,7 @@ import BlockRAMv::*;
 module mkToplevel();
 
     // init instruction memory
-    BlockRam#(Bit#(9), Bit#(32)) instrMem <- mkBlockRAM();
+    BlockRam#(Bit#(12), Bit#(32)) instrMem <- mkBlockRAM();
 
     // init data memory
     BlockRamTrueDualPort#(Bit#(9), Bit#(32)) dataMem <- mkDualPortBlockRAM();

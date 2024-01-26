@@ -27,7 +27,7 @@ interface DecodeIfc; // using the same types as the rest of the system
     interface Get#(CL_T)    get_ctrl;
 endinterface
 
-module mkDecode#(BlockRam#(Bit#(9), Bit#(32)) instrMem)(DecodeIfc);
+module mkDecode#(BlockRam#(Bit#(12), Bit#(32)) instrMem)(DecodeIfc);
     Reg#(Valid_T) valid <- mkReg(0);
     Reg#(PC_T) pc <- mkReg(0);
     Reg#(RF_T) rf <- mkReg(unpack(0));

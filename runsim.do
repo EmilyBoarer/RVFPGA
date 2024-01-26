@@ -61,6 +61,16 @@ add wave -position insertpoint \
   /toptoplevel/toplevel/dataMem_ram/ram[17]\
   /toptoplevel/toplevel/dataMem_ram/ram[18]\
   /toptoplevel/toplevel/dataMem_ram/ram[19]\
+  /toptoplevel/toplevel/dataMem_ram/ram[100]\
+  /toptoplevel/toplevel/dataMem_ram/ram[101]\
+  /toptoplevel/toplevel/dataMem_ram/ram[102]\
+  /toptoplevel/toplevel/dataMem_ram/ram[103]\
+  /toptoplevel/toplevel/dataMem_ram/ram[104]\
+  /toptoplevel/toplevel/dataMem_ram/ram[105]\
+  /toptoplevel/toplevel/dataMem_ram/ram[106]\
+  /toptoplevel/toplevel/dataMem_ram/ram[107]\
+  /toptoplevel/toplevel/dataMem_ram/ram[108]\
+  /toptoplevel/toplevel/dataMem_ram/ram[109]\
   /toptoplevel/CLK
 # run simulation for 200 nanoseconds
 run 100 ps

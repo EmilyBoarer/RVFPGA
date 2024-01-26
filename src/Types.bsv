@@ -10,7 +10,7 @@ export CL_T (..);
 // define types used throughout the implementation
 typedef Bit#(32)  PC_T;
 typedef Bit#(32)  Word_T;  // Used in most places in the computer
-typedef UInt#(4)  Valid_T;
+typedef Bit#(4)  Valid_T;
 
 typedef struct  {
     Word_T r1;

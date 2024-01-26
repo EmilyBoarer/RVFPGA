@@ -102,6 +102,7 @@ fib_instrs = [
 ## 25th Jan: test program to check data memory writes
 ## = infinite loop of adding then storing
 bram_writes_test_instrs = [
+    instr_gen(opcode=OPI,   funct3=ADDI, rd=3, rs1=0, I_imm=100),
     instr_gen(opcode=OPI,   funct3=ADDI, rd=3, rs1=3, I_imm=1),
     instr_gen(opcode=STORE, funct3=STORE_WORD, rs1=3, rs2=3, S_imm=0),
     instr_gen(opcode=BRANCH,funct3=BRANCH_EQ, rs1=0, rs2=0, B_imm=-4*2),
@@ -112,9 +113,19 @@ bram_writes_test_instrs = [
 
 ## todo account for a hart offset for each instruction
 
-instrs = fib_instrs
-while len(instrs) < 2**(6+3):
+#hart0 # must be all 0s (inefficient I know)
+instrs = []
+while len(instrs) < 256:
     instrs.append(0)
+#hart1
+instrs += fib_instrs
+while len(instrs) < 256*2:
+    instrs.append(0)
+#hart2
+instrs += bram_writes_test_instrs
+while len(instrs) < 2**(8+4):
+    instrs.append(0)
+
 
 def hexx(i):
     s = hex(i)[2:]
