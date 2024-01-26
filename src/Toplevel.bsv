@@ -31,11 +31,11 @@ module mkToplevel();
     // Instantiate all the stages
     // NB: "s_" is short for "stage_"
     ControlIfc  s_control <- mkControl();
-    FetchIfc    s_fetch   <- mkFetch(instrMem);  // requests  instrmem reads
-    DecodeIfc   s_decode  <- mkDecode(instrMem); // completes instrmem reads
-    ExecIfc     s_exec    <- mkExec();           // requests  datamem  reads
-    DatmemIfc   s_datmem  <- mkDatmem(dataMem);  // requests  datamem  writes at start of cycle. completes reads at (end of ?) cycle
-    RfupdateIfc s_rfup    <- mkRfupdate();
+    FetchIfc    s_fetch   <- mkFetch(instrMem);    // requests  instrmem reads
+    DecodeIfc   s_decode  <- mkDecode(instrMem);   // completes instrmem reads
+    ExecIfc     s_exec    <- mkExec();
+    DatmemIfc   s_datmem  <- mkDatmem(dataMem);    // requests  datamem  reads & writes
+    RfupdateIfc s_rfup    <- mkRfupdate(dataMem);  // completes datamem  reads
     // TODO handle when instruction fetch for 1st instruction after enabling without writing random things to memory
 
     // Connect Control -> Fetch

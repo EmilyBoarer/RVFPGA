@@ -27,6 +27,11 @@ add wave -position insertpoint \
   /toptoplevel/toplevel/s_datmem_pc                 \
   /toptoplevel/toplevel/s_rfup_pc                 \
   /toptoplevel/CLK \
+  /toptoplevel/toplevel/s_rfup_value                 \
+  /toptoplevel/toplevel/dataMem_ram/ADDR_B                 \
+  /toptoplevel/toplevel/dataMem_ram/DO_B                 \
+  /toptoplevel/toplevel/dataMem_ram/DO_VALID_B                 \
+  /toptoplevel/CLK \
   /toptoplevel/toplevel/s_fetch_pc                 \
   /toptoplevel/toplevel/s_decode_pc                 \
   /toptoplevel/toplevel/s_decode_instr                 \

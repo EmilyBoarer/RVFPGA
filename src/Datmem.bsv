@@ -108,6 +108,10 @@ module mkDatmem#(BlockRamTrueDualPort#(Bit#(9), Bit#(32)) dataMem)(DatmemIfc);
     interface Put put_alu_result;
         method Action put (Word_T newalu_result);
             alu_result <= newalu_result;
+            // start read from data memory (to be muxed at start of rfupdate stage)
+            if (controllines.data_read) begin
+                dataMem.putB(False, True, truncate(unpack(alu_result)), 0);
+            end
         endmethod
     endinterface
 
@@ -118,12 +122,7 @@ module mkDatmem#(BlockRamTrueDualPort#(Bit#(9), Bit#(32)) dataMem)(DatmemIfc);
                 // write to data memory
                 dataMem.putA(True, False, truncate(unpack(alu_result)), rfrs2);
             end
-            if (controllines.data_read) begin
-                // TODO read from data memory
-                return 0;
-            end else begin
-                return alu_result;
-            end
+            return alu_result; // this is mux-ed with read value in rfupdate stage now (NOT as per euarch-2)
         endmethod
     endinterface
 
