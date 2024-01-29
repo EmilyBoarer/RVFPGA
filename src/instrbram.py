@@ -81,7 +81,7 @@ add_datas = [
 # beq   x0, x0, -4 # used to loop forever until all harts are done executing
 fib_instrs = [
     instr_gen(opcode=OPI,   funct3=ADDI, rd=1, rs1=0, I_imm=0),
-    instr_gen(opcode=OPI,   funct3=ADDI, rd=5, rs1=0, I_imm=80),
+    instr_gen(opcode=OPI,   funct3=ADDI, rd=5, rs1=0, I_imm=20),
     instr_gen(opcode=OPI,   funct3=ADDI, rd=2, rs1=0, I_imm=0),
     instr_gen(opcode=OPI,   funct3=ADDI, rd=3, rs1=0, I_imm=1),
 
@@ -90,10 +90,10 @@ fib_instrs = [
     instr_gen(opcode=OPI,   funct3=ADDI, rd=1, rs1=1, I_imm=4),
     instr_gen(opcode=OPI,   funct3=ADDI, rd=2, rs1=3, I_imm=0),
     instr_gen(opcode=OPI,   funct3=ADDI, rd=3, rs1=4, I_imm=0),
-    instr_gen(opcode=BRANCH,funct3=BRANCH_EQ,  rs1=1, rs2=5, B_imm=4),
+    instr_gen(opcode=BRANCH,funct3=BRANCH_EQ,  rs1=1, rs2=5, B_imm=2*4),
     instr_gen(opcode=BRANCH,funct3=BRANCH_EQ,  rs1=0, rs2=0, B_imm=-6*4),
 
-    instr_gen(opcode=OPI,   funct3=SLTI),
+    # instr_gen(opcode=OPI,   funct3=SLTI),
     instr_gen(opcode=BRANCH,funct3=BRANCH_EQ, rs1=0, rs2=0, B_imm=0), # -8 in two's compliment
 ]
 

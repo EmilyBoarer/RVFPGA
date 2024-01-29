@@ -62,7 +62,9 @@ module mkExec(ExecIfc);
     endinterface
     interface Get get_pc;
         method ActionValue#(PC_T) get ();
-            if (controllines.alu_pc_out) begin
+            if (controllines.alu_pc_out && (
+                (controllines.alu_br_eq) ? (rfrs1 == rfrs2) : True
+                )) begin
                 let result = calc_alu(rfrs1, rfrs2, imm, pc, controllines);
                 return result;
             end else if (valid != 0) begin

@@ -202,7 +202,8 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
                 decoded.imm[31:13] = 19'b1111111111111111111; // sign extend the immediate
             end
             case (decoded.funct3) 
-                `func3_beq: begin // ADD/SUB // TODO account for sub option too
+                `func3_beq: begin // Branch if Equal
+                    decoded.cl.alu_br_eq  = True;
                     decoded.cl.alu_pc_in  = True;
                     decoded.cl.alu_imm_in = True;
                     decoded.cl.alu_add    = True;
@@ -223,7 +224,7 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
                 decoded.imm[31:12] = 20'b11111111111111111111; // sign extend the immediate
             end
             case (decoded.funct3) 
-                `func3_lw: begin // ADD/SUB // TODO account for sub option too
+                `func3_lw: begin // Load Word
                     decoded.cl.alu_imm_in = True;
                     decoded.cl.alu_add    = True;
                     decoded.cl.data_read  = True;
@@ -244,7 +245,7 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
                 decoded.imm[31:12] = 20'b11111111111111111111; // sign extend the immediate
             end
             case (decoded.funct3) 
-                `func3_sw: begin // ADD/SUB // TODO account for sub option too
+                `func3_sw: begin // Store Word
                     decoded.cl.alu_imm_in = True;
                     decoded.cl.alu_add    = True;
                     decoded.cl.data_write = True;

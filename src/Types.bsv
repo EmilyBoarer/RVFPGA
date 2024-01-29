@@ -55,6 +55,7 @@ typedef struct { // Control Lines
     Bool data_read;
     Bool data_write;
     Bool rf_update;
+    Bool branch_eq;
 } CL_T deriving (Bits, Eq);
 
 
