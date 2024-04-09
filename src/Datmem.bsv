@@ -26,6 +26,8 @@ interface DatmemIfc; // using the same types as the rest of the system
     interface Get#(Bit#(5)) get_rd;
     interface Get#(Word_T)  get_value;
     interface Get#(CL_T)    get_ctrl;
+
+    method Bit#(1) getmmapvalue();
 endinterface
 
 module mkDatmem#(BlockRamTrueDualPort#(Bit#(9), Bit#(32)) dataMem)(DatmemIfc);
@@ -38,6 +40,11 @@ module mkDatmem#(BlockRamTrueDualPort#(Bit#(9), Bit#(32)) dataMem)(DatmemIfc);
 
     Reg#(Word_T) rfrs2 <- mkReg(0);
     Reg#(Word_T) alu_result <- mkReg(0);
+
+    Reg#(Bit#(1)) mmapvalue <- mkReg(0);
+    method Bit#(1) getmmapvalue();
+        return mmapvalue;
+    endmethod
 
 
     interface Put put_valid;
@@ -120,7 +127,9 @@ module mkDatmem#(BlockRamTrueDualPort#(Bit#(9), Bit#(32)) dataMem)(DatmemIfc);
         method ActionValue#(Word_T) get ();
             if (controllines.data_write) begin
                 // write to data memory
-                dataMem.putA(True, False, truncate(unpack(alu_result)[31:2]), rfrs2); // ignore 2 least sig bits since StoreWord
+                Bit#(9) addr = truncate(unpack(alu_result)[31:2]);
+                if (addr == 511) mmapvalue <= rfrs2[0]; // save to memory mapped value
+                else dataMem.putA(True, False, addr, rfrs2); // ignore 2 least sig bits since StoreWord // save to memory
             end
             return alu_result; // this is mux-ed with read value in rfupdate stage now (NOT as per euarch-2)
         endmethod

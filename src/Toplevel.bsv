@@ -19,8 +19,12 @@ import BlockRAMv::*;
 // Pipeline overview:
 //    Control -> Fetch -> Decode -> Execute -> Data Memory R/W -> RF Update -> [repeat] 
 
+interface ToplevelIfc;
+    method Bit#(1) readmmap();
+endinterface
 
-module mkToplevel();
+
+module mkToplevel(ToplevelIfc);
 
     // init instruction memory
     BlockRam#(Bit#(12), Bit#(32)) instrMem <- mkBlockRAM();
@@ -87,6 +91,9 @@ module mkToplevel();
     mkConnection(s_rfup.get_pc,       s_control.put_pc   );
     mkConnection(s_rfup.get_rf,       s_control.put_rf   );
 
+    method Bit#(1) readmmap ();
+        return s_datmem.getmmapvalue();
+    endmethod
 
 endmodule
 
