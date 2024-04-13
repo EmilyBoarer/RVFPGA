@@ -1,4 +1,6 @@
 `include "verilog/mkToplevel.v"
+`include "lib/VerilogBlockRAM_OneCycle.v"
+`include "lib/VerilogBlockRAM_TrueDualPort_OneCycle.v"
 
 module toptoplevel();
     reg CLK;

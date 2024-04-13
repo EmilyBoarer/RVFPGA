@@ -3,6 +3,8 @@ package Datmem;
 import GetPut::*;
 import Types::*;
 
+import BlockRAMv::*;
+
 export DatmemIfc (..);
 export mkDatmem;
 
@@ -24,9 +26,11 @@ interface DatmemIfc; // using the same types as the rest of the system
     interface Get#(Bit#(5)) get_rd;
     interface Get#(Word_T)  get_value;
     interface Get#(CL_T)    get_ctrl;
+
+    method Bit#(1) getmmapvalue();
 endinterface
 
-module mkDatmem(DatmemIfc);
+module mkDatmem#(BlockRamTrueDualPort#(Bit#(9), Bit#(32)) dataMem)(DatmemIfc);
     Reg#(Valid_T) valid <- mkReg(0);
     Reg#(PC_T) pc <- mkReg(0);
     Reg#(RF_T) rf <- mkReg(unpack(0));
@@ -36,6 +40,11 @@ module mkDatmem(DatmemIfc);
 
     Reg#(Word_T) rfrs2 <- mkReg(0);
     Reg#(Word_T) alu_result <- mkReg(0);
+
+    Reg#(Bit#(1)) mmapvalue <- mkReg(0);
+    method Bit#(1) getmmapvalue();
+        return mmapvalue;
+    endmethod
 
 
     interface Put put_valid;
@@ -106,6 +115,10 @@ module mkDatmem(DatmemIfc);
     interface Put put_alu_result;
         method Action put (Word_T newalu_result);
             alu_result <= newalu_result;
+            // start read from data memory (to be muxed at start of rfupdate stage)
+            if (controllines.data_read) begin
+                dataMem.putB(False, True, truncate(unpack(alu_result)[31:2]), 0); // ignore 2 least sig bits since LoadWord
+            end
         endmethod
     endinterface
 
@@ -113,14 +126,12 @@ module mkDatmem(DatmemIfc);
     interface Get get_value;
         method ActionValue#(Word_T) get ();
             if (controllines.data_write) begin
-                // TODO write to data memory
+                // write to data memory
+                Bit#(9) addr = truncate(unpack(alu_result)[31:2]);
+                if (addr == 511) mmapvalue <= rfrs2[0]; // save to memory mapped value
+                else dataMem.putA(True, False, addr, rfrs2); // ignore 2 least sig bits since StoreWord // save to memory
             end
-            if (controllines.data_read) begin
-                // TODO read from data memory
-                return 0;
-            end else begin
-                return alu_result;
-            end
+            return alu_result; // this is mux-ed with read value in rfupdate stage now (NOT as per euarch-2)
         endmethod
     endinterface
 

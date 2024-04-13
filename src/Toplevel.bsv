@@ -13,20 +13,33 @@ import Datmem::*;
 import Rfupdate::*;
 
 
+import BlockRAMv::*;
+
+
 // Pipeline overview:
 //    Control -> Fetch -> Decode -> Execute -> Data Memory R/W -> RF Update -> [repeat] 
 
+interface ToplevelIfc;
+    method Bit#(1) readmmap();
+endinterface
 
-module mkToplevel();
+
+module mkToplevel(ToplevelIfc);
+
+    // init instruction memory
+    BlockRam#(Bit#(12), Bit#(32)) instrMem <- mkBlockRAM();
+
+    // init data memory
+    BlockRamTrueDualPort#(Bit#(9), Bit#(32)) dataMem <- mkDualPortBlockRAM();
 
     // Instantiate all the stages
     // NB: "s_" is short for "stage_"
     ControlIfc  s_control <- mkControl();
-    FetchIfc    s_fetch   <- mkFetch();
-    DecodeIfc   s_decode  <- mkDecode();
+    FetchIfc    s_fetch   <- mkFetch(instrMem);    // requests  instrmem reads
+    DecodeIfc   s_decode  <- mkDecode(instrMem);   // completes instrmem reads
     ExecIfc     s_exec    <- mkExec();
-    DatmemIfc   s_datmem  <- mkDatmem();
-    RfupdateIfc s_rfup    <- mkRfupdate();
+    DatmemIfc   s_datmem  <- mkDatmem(dataMem);    // requests  datamem  reads & writes
+    RfupdateIfc s_rfup    <- mkRfupdate(dataMem);  // completes datamem  reads
     // TODO handle when instruction fetch for 1st instruction after enabling without writing random things to memory
 
     // Connect Control -> Fetch
@@ -78,15 +91,9 @@ module mkToplevel();
     mkConnection(s_rfup.get_pc,       s_control.put_pc   );
     mkConnection(s_rfup.get_rf,       s_control.put_rf   );
 
-    // TODO: connect once implemented:
-    // Connect rd
-    // Connect RF[rs1]
-    // Connect RF[rs2]
-    // Connect IMM
-    // Connect ALU_OUT
-    // Connect VALUE
-
-    // Connect _all the instruction lines_
+    method Bit#(1) readmmap ();
+        return s_datmem.getmmapvalue();
+    endmethod
 
 endmodule
 

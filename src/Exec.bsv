@@ -62,13 +62,16 @@ module mkExec(ExecIfc);
     endinterface
     interface Get get_pc;
         method ActionValue#(PC_T) get ();
-            if (controllines.alu_pc_out) begin
+            if (controllines.alu_pc_out && (
+                (controllines.alu_br_eq) ? (rfrs1 == rfrs2) : True
+                )) begin
                 let result = calc_alu(rfrs1, rfrs2, imm, pc, controllines);
                 return result;
-            end else begin
+            end else if (valid != 0) begin
                 return pc+4; // +4 since 4 bytes = 1 word
+            end else begin
+                return pc; // Do nothing if invalid
             end
-            // TODO update this!
         endmethod
     endinterface
 

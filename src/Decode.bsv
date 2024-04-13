@@ -3,6 +3,8 @@ package Decode;
 import GetPut::*;
 import Types::*;
 
+import BlockRAMv::*;
+
 export DecodeIfc (..);
 export mkDecode;
 
@@ -16,17 +18,16 @@ interface DecodeIfc; // using the same types as the rest of the system
     interface Put#(RF_T) put_rf;
     interface Get#(RF_T) get_rf;
 
-    interface Put#(Bit#(32)) put_instr;
+    interface Put#(Bool) put_instr;
 
     interface Get#(Bit#(5)) get_rd;
     interface Get#(Word_T)  get_rfrs1;
     interface Get#(Word_T)  get_rfrs2;
     interface Get#(Word_T)  get_imm;
     interface Get#(CL_T)    get_ctrl;
-
 endinterface
 
-module mkDecode(DecodeIfc);
+module mkDecode#(BlockRam#(Bit#(12), Bit#(32)) instrMem)(DecodeIfc);
     Reg#(Valid_T) valid <- mkReg(0);
     Reg#(PC_T) pc <- mkReg(0);
     Reg#(RF_T) rf <- mkReg(unpack(0));
@@ -67,8 +68,12 @@ module mkDecode(DecodeIfc);
 
 
     interface Put put_instr;
-        method Action put (Bit#(32) newinstr);
-            instr <= newinstr;
+        method Action put (Bool doFetch);
+            if (instrMem.dataOutValid && doFetch) begin
+                instr <= instrMem.dataOut; // TODO check this works properly
+            end else begin
+                instr <= 255; // TODO replace with a NOP?? or stall-like thing??
+            end
         endmethod
     endinterface
 
@@ -193,10 +198,15 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
             decoded.imm[10:5] = instr[30:25];
             decoded.imm[11]   = instr[7];
             decoded.imm[12]   = instr[31];
+            if (instr[31] == 1) begin 
+                decoded.imm[31:13] = 19'b1111111111111111111; // sign extend the immediate
+            end
             case (decoded.funct3) 
-                `func3_beq: begin // ADD/SUB // TODO account for sub option too
+                `func3_beq: begin // Branch if Equal
+                    decoded.cl.alu_br_eq  = True;
                     decoded.cl.alu_pc_in  = True;
                     decoded.cl.alu_imm_in = True;
+                    decoded.cl.alu_add    = True;
                     decoded.cl.alu_br_eq  = True;
                     decoded.cl.alu_pc_out = True;
                 end
@@ -210,8 +220,11 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
         // LOAD ===========
         `opcode_load: begin
             decoded.imm[11:0] = decoded.funct12;
+            if (decoded.imm[11] == 1) begin 
+                decoded.imm[31:12] = 20'b11111111111111111111; // sign extend the immediate
+            end
             case (decoded.funct3) 
-                `func3_lw: begin // ADD/SUB // TODO account for sub option too
+                `func3_lw: begin // Load Word
                     decoded.cl.alu_imm_in = True;
                     decoded.cl.alu_add    = True;
                     decoded.cl.data_read  = True;
@@ -228,8 +241,11 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
         `opcode_store: begin
             decoded.imm[4:0]  = decoded.rd;
             decoded.imm[11:5] = decoded.funct7;
+            if (decoded.imm[11] == 1) begin 
+                decoded.imm[31:12] = 20'b11111111111111111111; // sign extend the immediate
+            end
             case (decoded.funct3) 
-                `func3_sw: begin // ADD/SUB // TODO account for sub option too
+                `func3_sw: begin // Store Word
                     decoded.cl.alu_imm_in = True;
                     decoded.cl.alu_add    = True;
                     decoded.cl.data_write = True;
@@ -244,6 +260,9 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
         // OP_IMM ==========
         `opcode_opimm: begin
             decoded.imm[11:0] = decoded.funct12;
+            if (decoded.imm[11] == 1) begin 
+                decoded.imm[31:12] = 20'b11111111111111111111; // sign extend the immediate
+            end
             case (decoded.funct3) 
                 `func3_addsub: begin // ADD/SUB // TODO account for sub option too
                     decoded.cl.alu_imm_in = True;
