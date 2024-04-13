@@ -321,7 +321,7 @@ expected_instructions_per_cycle = {
     "RVFPGA(EuArch-2)":1/harts["RVFPGA(EuArch-2)"], # branching not a concern under our memory model
     # "RVFPGA(EuArch-2) (1-hart)":1/harts["RVFPGA(EuArch-2)"], # branching not a concern under our memory model
     # "RVFPGA(EuArch-2) (3-hart)":1/harts["RVFPGA(EuArch-2)"], # branching not a concern under our memory model
-    "CLARVI":7/11, # accounts for branching, but not stalls from memory not ready => parity with euarch
+    "CLARVI":8/11, # accounts for branching, but not stalls from memory not ready => parity with euarch
 }
 
 
@@ -360,45 +360,52 @@ def box_plot_things(ax, f, yunit, xunit, label=True):
 
 fig.set_size_inches(6,7)
 
-## plot fmax
+# plot fmax
+# box_plot_things(ax,
+#                 lambda model, runs: ([(run["fmax85"]+run["fmax0"])/2 for run in runs],model),
+#                 "MHz", "mean Fmax [higher = better]")
+
+## plot performance
 box_plot_things(ax,
-                lambda model, runs: ([(run["fmax85"]+run["fmax0"])/2 for run in runs],model),
-                "MHz", "mean Fmax [higher = better]")
+                lambda model, runs: ([
+                    expected_instructions_per_cycle[model] * harts[model] * run["fmax0"]
+                    for run in runs],
+                    f"{model}\n(1,3,6 harts)" if model == "RVFPGA(EuArch-2)" else model ),
+                "mega-instructions per second", "Expected Performance [higher = better]")
+box_plot_things(ax,
+                lambda model, runs: ([
+                    expected_instructions_per_cycle[model] * (1 if model == "RVFPGA(EuArch-2)" else harts[model]) * run["fmax0"]
+                    for run in runs],
+                    "" if model == "RVFPGA(EuArch-2)" else None ),
+                "mega-instructions per second", "Expected Performance [higher = better]", False)
+box_plot_things(ax,
+                lambda model, runs: ([
+                    expected_instructions_per_cycle[model] * (3 if model == "RVFPGA(EuArch-2)" else harts[model]) * run["fmax0"]
+                    for run in runs],
+                    "" if model == "RVFPGA(EuArch-2)" else None),
+                "mega-instructions per second", "Expected Performance [higher = better]", False)
 
 
-# box_plot_things(axes[0][1],
+
+
+# ## Area etc..
+# box_plot_things(ax,
 #                 lambda model, runs: ([(run["alm"]/maxvals["alm"])*100 for run in runs],model),
 #                 "%", "Logic Utilisation [lower = better]")
 
 
-
-# ## plot performance
 # box_plot_things(ax,
-#                 lambda model, runs: ([
-#                     expected_instructions_per_cycle[model] * harts[model] * run["fmax0"]
-#                     for run in runs],
-#                     f"{model}\n(1,3,6 harts)" if model == "RVFPGA(EuArch-2)" else model ),
-#                 "mega-instructions per second", "Performance [higher = better]")
-# box_plot_things(ax,
-#                 lambda model, runs: ([
-#                     expected_instructions_per_cycle[model] * (1 if model == "RVFPGA(EuArch-2)" else harts[model]) * run["fmax0"]
-#                     for run in runs],
-#                     "" if model == "RVFPGA(EuArch-2)" else None ),
-#                 "mega-instructions per second", "Performance [higher = better]", False)
-# box_plot_things(ax,
-#                 lambda model, runs: ([
-#                     expected_instructions_per_cycle[model] * (3 if model == "RVFPGA(EuArch-2)" else harts[model]) * run["fmax0"]
-#                     for run in runs],
-#                     "" if model == "RVFPGA(EuArch-2)" else None),
-#                 "mega-instructions per second", "Performance [higher = better]", False)
+#                 lambda model, runs: ([(run["totalbram"]/maxvals["totalbram"])*100 for run in runs],model),
+#                 "%", "BRAM Utilisation [lower = better]")
 
 
 
-
-# box_plot_things(axes[1][1],
-#                 lambda model, runs: [
-#                     expected_instructions_per_cycle[model] * harts[model] * run["fmax0"]
-#                     for run in runs],
-#                 "mega-instructions per second", "Performance (total) [higher = better]")
+            # "alm":          2800,
+            # "totalreg":     3572,
+            # "pins":         246,
+            # "totalbram":    2621750,
+            # "fmax85":       71.62,
+            # "fmax0":        73.46,
+            # "seed":         1,
 
 plt.show()
