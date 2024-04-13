@@ -97,6 +97,25 @@ fib_instrs = [
     instr_gen(opcode=BRANCH,funct3=BRANCH_EQ, rs1=0, rs2=0, B_imm=0), # -8 in two's compliment
 ]
 
+fib2_instrs = [ ## exactly the same but with a different output address and length
+    instr_gen(opcode=OPI,   funct3=ADDI, rd=1, rs1=0, I_imm=0),
+    instr_gen(opcode=OPI,   funct3=ADDI, rd=5, rs1=0, I_imm=28),
+    instr_gen(opcode=OPI,   funct3=ADDI, rd=2, rs1=0, I_imm=0),
+    instr_gen(opcode=OPI,   funct3=ADDI, rd=3, rs1=0, I_imm=1),
+
+    instr_gen(opcode=OP,    funct3=ADD,  rd=4, rs1=2, rs2=3  ),
+    instr_gen(opcode=OPI,   funct3=ADDI, rd=4, rs1=4, I_imm=1), ## bonus instruction to differentiate from normal fib
+    instr_gen(opcode=STORE, funct3=STORE_WORD, rs1=1, rs2=4, S_imm=0),
+    instr_gen(opcode=OPI,   funct3=ADDI, rd=1, rs1=1, I_imm=4),
+    instr_gen(opcode=OPI,   funct3=ADDI, rd=2, rs1=3, I_imm=0),
+    instr_gen(opcode=OPI,   funct3=ADDI, rd=3, rs1=4, I_imm=0),
+    instr_gen(opcode=BRANCH,funct3=BRANCH_EQ,  rs1=1, rs2=5, B_imm=2*4),
+    instr_gen(opcode=BRANCH,funct3=BRANCH_EQ,  rs1=0, rs2=0, B_imm=-7*4),
+
+    # instr_gen(opcode=OPI,   funct3=SLTI),
+    instr_gen(opcode=BRANCH,funct3=BRANCH_EQ, rs1=0, rs2=0, B_imm=0), # -8 in two's compliment
+]
+
 
 
 ## 25th Jan: test program to check data memory writes
@@ -119,6 +138,22 @@ bram_read_test_instrs = [
     instr_gen(opcode=BRANCH,funct3=BRANCH_EQ, rs1=0, rs2=0, B_imm=-4*3),
 ]
 
+## additional adders
+loc = 10 ## place in memory that is used, 1 word here
+bram_read_test_instrs2 = [
+    instr_gen(opcode=LOAD,  funct3=LOAD_WORD, rs1=0, rd=3, I_imm=loc*4),
+    instr_gen(opcode=OPI,   funct3=ADDI, rd=3, rs1=3, I_imm=1),
+    instr_gen(opcode=STORE, funct3=STORE_WORD, rs1=0, rs2=3, S_imm=loc*4),
+    instr_gen(opcode=BRANCH,funct3=BRANCH_EQ, rs1=0, rs2=0, B_imm=-4*3),
+]
+loc = 11 ## place in memory that is used, 1 word here
+bram_read_test_instrs3 = [
+    instr_gen(opcode=LOAD,  funct3=LOAD_WORD, rs1=0, rd=3, I_imm=loc*4),
+    instr_gen(opcode=OPI,   funct3=ADDI, rd=3, rs1=3, I_imm=1),
+    instr_gen(opcode=STORE, funct3=STORE_WORD, rs1=0, rs2=3, S_imm=loc*4),
+    instr_gen(opcode=BRANCH,funct3=BRANCH_EQ, rs1=0, rs2=0, B_imm=-4*3),
+]
+
 
 ## Write the program to instruction bram load file
 
@@ -126,21 +161,23 @@ bram_read_test_instrs = [
 
 #hart0 # must be all 0s (inefficient I know)
 instrs = []
-while len(instrs) < 256:
-    instrs.append(0)
-#hart1
-instrs += fib_instrs
-while len(instrs) < 256*2:
-    instrs.append(0)
-#hart2
-instrs += bram_read_test_instrs
-while len(instrs) < 256*3:
-    instrs.append(0)
-#hart3
-instrs += bram_writes_test_instrs
-while len(instrs) < 2**(8+4):
-    instrs.append(0)
+hart = 0
+def add_next_hart(new_instrs):
+    global instrs
+    global hart
 
+    instrs += new_instrs
+    hart += 1
+    while len(instrs) < 256*(hart):
+        instrs.append(0)
+
+add_next_hart([]) ## add 0th hart (never used)
+add_next_hart(fib_instrs)
+add_next_hart(bram_read_test_instrs)
+add_next_hart(bram_writes_test_instrs)
+add_next_hart(fib2_instrs)
+add_next_hart(bram_read_test_instrs2)
+add_next_hart(bram_read_test_instrs3)
 
 def hexx(i):
     s = hex(i)[2:]
