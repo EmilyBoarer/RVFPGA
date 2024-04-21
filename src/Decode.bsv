@@ -159,17 +159,19 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
     decoded.rfrs2   = 0;
 
     CL_T controllines = ?;
-    controllines.alu_pc_in  = False;
-    controllines.alu_imm_in = False;
-    controllines.alu_op     = AluOps_Unset;
-    controllines.alu_br     = False;
-    controllines.alu_br_type= BraT_Unset;
-    controllines.alu_pc_out = False;
-    controllines.data_read  = False;
-    controllines.data_write = False;
-    controllines.rf_update  = False;
-    controllines.isunsigned = False;
-    controllines.wrap_shift = False;
+    controllines.alu_pc_in      = False;
+    controllines.alu_imm_in     = False;
+    controllines.alu_op         = AluOps_Unset;
+    controllines.alu_br         = False;
+    controllines.alu_br_type    = BraT_Unset;
+    controllines.alu_pc_out     = False;
+    controllines.data_read      = False;
+    controllines.data_write     = False;
+    controllines.data_unsigned  = False;
+    controllines.data_size      = DatSize_Word;
+    controllines.rf_update      = False;
+    controllines.isunsigned     = False;
+    controllines.wrap_shift     = False;
 
     decoded.cl              = controllines;
     
@@ -202,8 +204,14 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
     `define func3_bgeu    3'b111
 
     `define func3_lw      3'b010
+    `define func3_lh      3'b001
+    `define func3_lhu     3'b101
+    `define func3_lb      3'b000
+    `define func3_lbu     3'b100
 
     `define func3_sw      3'b010
+    `define func3_sh      3'b001
+    `define func3_sb      3'b000
 
     
     case (decoded.opcode)
@@ -263,6 +271,36 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
                     decoded.cl.data_read  = True;
                     decoded.cl.rf_update  = True;
                 end
+                `func3_lh: begin // Load half-word
+                    decoded.cl.alu_imm_in = True;
+                    decoded.cl.alu_op     = AluOps_Add;
+                    decoded.cl.data_read  = True;
+                    decoded.cl.rf_update  = True;
+                    decoded.cl.data_size  = DatSize_HalfWord;
+                end
+                `func3_lhu: begin // Load half-word unsigned
+                    decoded.cl.alu_imm_in = True;
+                    decoded.cl.alu_op     = AluOps_Add;
+                    decoded.cl.data_read  = True;
+                    decoded.cl.rf_update  = True;
+                    decoded.cl.data_size  = DatSize_HalfWord;
+                    decoded.cl.data_unsigned  = True;
+                end
+                `func3_lb: begin // Load byte
+                    decoded.cl.alu_imm_in = True;
+                    decoded.cl.alu_op     = AluOps_Add;
+                    decoded.cl.data_read  = True;
+                    decoded.cl.rf_update  = True;
+                    decoded.cl.data_size  = DatSize_Byte;
+                end
+                `func3_lbu: begin // Load byte unsigned
+                    decoded.cl.alu_imm_in = True;
+                    decoded.cl.alu_op     = AluOps_Add;
+                    decoded.cl.data_read  = True;
+                    decoded.cl.rf_update  = True;
+                    decoded.cl.data_size  = DatSize_Byte;
+                    decoded.cl.data_unsigned  = True;
+                end
                 default: begin  // TODO add other instructions
                     // not supported, so stop hart
                     decoded.need_to_invalidate = True;
@@ -283,7 +321,19 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
                     decoded.cl.alu_op     = AluOps_Add;
                     decoded.cl.data_write = True;
                 end
-                default: begin  // TODO add other instructions
+                `func3_sh: begin // Store half-word
+                    decoded.cl.alu_imm_in = True;
+                    decoded.cl.alu_op     = AluOps_Add;
+                    decoded.cl.data_write = True;
+                    decoded.cl.data_size  = DatSize_HalfWord;
+                end
+                `func3_sb: begin // Store byte
+                    decoded.cl.alu_imm_in = True;
+                    decoded.cl.alu_op     = AluOps_Add;
+                    decoded.cl.data_write = True;
+                    decoded.cl.data_size  = DatSize_Byte;
+                end
+                default: begin
                     // not supported, so stop hart
                     decoded.need_to_invalidate = True;
                 end

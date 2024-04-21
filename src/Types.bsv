@@ -7,6 +7,7 @@ export RF_T (..);
 export CL_T (..);
 export AluOps (..);
 export BraT (..);
+export DatSize (..);
 
 
 // define types used throughout the implementation
@@ -68,6 +69,12 @@ typedef enum {
     BraT_Ge
 } BraT deriving (Eq, Bits);
 
+typedef enum {
+    DatSize_Word,
+    DatSize_HalfWord,
+    DatSize_Byte
+} DatSize deriving (Eq, Bits);
+
 typedef struct { // Control Lines
     Bool alu_pc_in;
     Bool alu_imm_in;
@@ -77,9 +84,11 @@ typedef struct { // Control Lines
     Bool alu_pc_out;
     Bool data_read;
     Bool data_write;
+    Bool data_unsigned;
+    DatSize data_size;
     Bool rf_update;
     Bool branch_eq;
-    Bool isunsigned;
+    Bool isunsigned; // TODO rename e.g. to: ALU unsigned
     Bool wrap_shift;
 } CL_T deriving (Bits, Eq);
 

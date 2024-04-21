@@ -127,9 +127,21 @@ module mkDatmem#(BlockRamTrueDualPort#(Bit#(9), Bit#(32)) dataMem)(DatmemIfc);
         method ActionValue#(Word_T) get ();
             if (controllines.data_write) begin
                 // write to data memory
+                Bit#(32) target = 0;
+                case (controllines.data_size)
+                    DatSize_Word: begin
+                        target = rfrs2;
+                    end
+                    DatSize_HalfWord: begin
+                        target[15:0] = rfrs2[15:0];
+                    end
+                    DatSize_Byte: begin
+                        target[7:0] = rfrs2[7:0];
+                    end
+                endcase
                 Bit#(9) addr = truncate(unpack(alu_result)[31:2]);
                 if (addr == 511) mmapvalue <= rfrs2[0]; // save to memory mapped value
-                else dataMem.putA(True, False, addr, rfrs2); // ignore 2 least sig bits since StoreWord // save to memory
+                else dataMem.putA(True, False, addr, target); // ignore 2 least sig bits since StoreWord // save to memory
             end
             return alu_result; // this is mux-ed with read value in rfupdate stage now (NOT as per euarch-2)
         endmethod

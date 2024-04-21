@@ -66,7 +66,27 @@ module mkRfupdate#(BlockRamTrueDualPort#(Bit#(9), Bit#(32)) dataMem)(RfupdateIfc
         method ActionValue#(RF_T) get ();
             Word_T v;
             if (controllines.data_read && dataMem.dataOutValidB) begin
-                v = pack(dataMem.dataOutB);
+                Bit#(32) target = 0;
+                case (controllines.data_size)
+                    DatSize_Word: begin
+                        target = dataMem.dataOutB;
+                    end
+                    DatSize_HalfWord: begin // TODO support reading from a non-word not at a word-multiple address
+                        target[15:0] = dataMem.dataOutB[15:0];
+                        if ((controllines.data_unsigned == False) 
+                         && (dataMem.dataOutB[15] == 1)) begin
+                            target[31:16] = 16'hffff;
+                        end
+                    end
+                    DatSize_Byte: begin
+                        target[7:0] = dataMem.dataOutB[7:0];
+                        if ((controllines.data_unsigned == False) 
+                         && (dataMem.dataOutB[7] == 1)) begin
+                            target[31:8] = 24'hffffff;
+                        end
+                    end
+                endcase
+                v = pack(target);
             end else begin
                 v = value;
             end
