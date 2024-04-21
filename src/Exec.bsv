@@ -62,11 +62,9 @@ module mkExec(ExecIfc);
     endinterface
     interface Get get_pc;
         method ActionValue#(PC_T) get ();
-            if (controllines.alu_pc_out && (
-                (controllines.alu_br_eq) ? (rfrs1 == rfrs2) : True
-                )) begin
+            if (controllines.alu_pc_out && calc_branching(rfrs1, rfrs2, controllines)) begin
                 let result = calc_alu(rfrs1, rfrs2, imm, pc, controllines);
-                return result;
+                return result; // TODO should be imm << 1 ???
             end else if (valid != 0) begin
                 return pc+4; // +4 since 4 bytes = 1 word
             end else begin
@@ -201,14 +199,25 @@ function Word_T calc_alu(Word_T rfrs1, Word_T rfrs2, Word_T imm, Word_T pc, CL_T
 
 endfunction
 
+function Bool calc_branching(Word_T rfrs1, Word_T rfrs2, CL_T controllines);
+    if (controllines.alu_br) begin
+        case (controllines.alu_br_type)
+            BraT_Eq:  begin
+                return rfrs1 == rfrs2;
+            end
+            BraT_Neq: begin
+                return rfrs1 != rfrs2;
+            end
+            BraT_Lt:  begin
+                return rfrs1 <  rfrs2;
+            end
+            BraT_Ge:  begin
+                return rfrs1 >= rfrs2;
+            end
+        endcase
+    end else begin
+        return True;
+    end
+endfunction
+
 endpackage
-
-// TODO for branching
-// Bluespec supports the usual boolean operators:
-
-// a == b
-// a > b
-// a < b
-// a != b
-// a >= b
-// a <= b

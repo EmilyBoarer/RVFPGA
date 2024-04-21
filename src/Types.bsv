@@ -6,6 +6,7 @@ export Valid_T;
 export RF_T (..);
 export CL_T (..);
 export AluOps (..);
+export BraT (..);
 
 
 // define types used throughout the implementation
@@ -48,22 +49,31 @@ typedef struct  {
 } RF_T deriving (Bits, Eq);
 
 typedef enum {
-    AluOps_Unset = 0,
-    AluOps_Add = 1,
-    AluOps_Sub = 2,
-    AluOps_Slt = 3,
-    AluOps_And = 4,
-    AluOps_Or  = 5,
-    AluOps_Xor = 6,
-    AluOps_Lshift = 7,
-    AluOps_Rshift = 8
+    AluOps_Unset,
+    AluOps_Add,
+    AluOps_Sub,
+    AluOps_Slt,
+    AluOps_And,
+    AluOps_Or,
+    AluOps_Xor,
+    AluOps_Lshift,
+    AluOps_Rshift
 } AluOps deriving (Eq, Bits);
+
+typedef enum {
+    BraT_Unset,
+    BraT_Eq,
+    BraT_Neq,
+    BraT_Lt,
+    BraT_Ge
+} BraT deriving (Eq, Bits);
 
 typedef struct { // Control Lines
     Bool alu_pc_in;
     Bool alu_imm_in;
     AluOps alu_op;
-    Bool alu_br_eq;
+    Bool alu_br;
+    BraT alu_br_type;
     Bool alu_pc_out;
     Bool data_read;
     Bool data_write;

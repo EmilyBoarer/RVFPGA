@@ -162,7 +162,8 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
     controllines.alu_pc_in  = False;
     controllines.alu_imm_in = False;
     controllines.alu_op     = AluOps_Unset;
-    controllines.alu_br_eq  = False;
+    controllines.alu_br     = False;
+    controllines.alu_br_type= BraT_Unset;
     controllines.alu_pc_out = False;
     controllines.data_read  = False;
     controllines.data_write = False;
@@ -194,6 +195,11 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
     `define func3_sr      3'b101
 
     `define func3_beq     3'b000
+    `define func3_bne     3'b001
+    `define func3_blt     3'b100
+    `define func3_bltu    3'b110
+    `define func3_bge     3'b101
+    `define func3_bgeu    3'b111
 
     `define func3_lw      3'b010
 
@@ -210,14 +216,32 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
             if (instr[31] == 1) begin 
                 decoded.imm[31:13] = 19'b1111111111111111111; // sign extend the immediate
             end
+            // set all these properties (they're the same for all branch instructions)
+            decoded.cl.alu_br     = True;
+            decoded.cl.alu_pc_in  = True;
+            decoded.cl.alu_imm_in = True;
+            decoded.cl.alu_op     = AluOps_Add;
+            decoded.cl.alu_pc_out = True;
             case (decoded.funct3) 
                 `func3_beq: begin // Branch if Equal
-                    decoded.cl.alu_br_eq  = True;
-                    decoded.cl.alu_pc_in  = True;
-                    decoded.cl.alu_imm_in = True;
-                    decoded.cl.alu_op     = AluOps_Add;
-                    decoded.cl.alu_br_eq  = True;
-                    decoded.cl.alu_pc_out = True;
+                    decoded.cl.alu_br_type= BraT_Eq;
+                end
+                `func3_bne: begin // Branch if Not Equal
+                    decoded.cl.alu_br_type= BraT_Neq;
+                end
+                `func3_blt: begin // Branch if Equal
+                    decoded.cl.alu_br_type= BraT_Lt;
+                end
+                `func3_bltu: begin // Branch if Equal
+                    decoded.cl.alu_br_type= BraT_Lt;
+                    decoded.cl.isunsigned = True;
+                end
+                `func3_bge: begin // Branch if Equal
+                    decoded.cl.alu_br_type= BraT_Ge;
+                end
+                `func3_bgeu: begin // Branch if Equal
+                    decoded.cl.alu_br_type= BraT_Ge;
+                    decoded.cl.isunsigned = True;
                 end
                 default: begin  // TODO add other instructions
                     // not supported, so stop hart
