@@ -149,14 +149,66 @@ endmodule
 // Calculate the alu result, which is then used by both get_pc and get_alu_result, to avoid code duplication
 // This is purely combinational logic
 function Word_T calc_alu(Word_T rfrs1, Word_T rfrs2, Word_T imm, Word_T pc, CL_T controllines);
-    let lhs = (controllines.alu_pc_in)  ? pc  : rfrs1;
-    let rhs = (controllines.alu_imm_in) ? imm : rfrs2;
-    if (controllines.alu_add) begin
-        return lhs + rhs;
+    let lhsunsigned = (controllines.alu_pc_in)  ? pc  : rfrs1;
+    let rhsunsigned = (controllines.alu_imm_in) ? imm : rfrs2;
+    Int#(32) lhssigned = unpack(lhsunsigned); // Cast to a signed integer type
+    Int#(32) rhssigned = unpack(rhsunsigned);
+    let shamt = rhsunsigned[4:0];
+
+    if (controllines.isunsigned == False || controllines.wrap_shift) begin
+        // signed, or use signed anyway since want an arithmetic / wrapping shift
+        let lhs = lhssigned;
+        let rhs = rhssigned;
+        if (controllines.alu_op == AluOps_Add) begin
+            return pack(lhs + rhs);
+        end else if (controllines.alu_op == AluOps_Slt) begin
+            return lhs < rhs ? 1 : 0;
+        end else if (controllines.alu_op == AluOps_And) begin
+            return pack(lhs & rhs);
+        end else if (controllines.alu_op == AluOps_Or) begin
+            return pack(lhs | rhs);
+        end else if (controllines.alu_op == AluOps_Xor) begin
+            return pack(lhs ^ rhs);
+        end else if (controllines.alu_op == AluOps_Lshift) begin
+            return pack(lhs << shamt);
+        end else if (controllines.alu_op == AluOps_Rshift) begin
+            return pack(lhs >> shamt);
+        end else begin // Subtract
+            return pack(lhs - rhs);
+        end 
     end else begin
-        // unused code // when adding sub instructions, ensure these are the correct way around!
-        return lhs - rhs;
+        // unsigned
+        let lhs = lhsunsigned;
+        let rhs = rhsunsigned;
+        if (controllines.alu_op == AluOps_Add) begin
+            return lhs + rhs;
+        end else if (controllines.alu_op == AluOps_Slt) begin
+            return lhs < rhs ? 1 : 0;
+        end else if (controllines.alu_op == AluOps_And) begin
+            return lhs & rhs;
+        end else if (controllines.alu_op == AluOps_Or) begin
+            return lhs | rhs;
+        end else if (controllines.alu_op == AluOps_Xor) begin
+            return lhs ^ rhs;
+        end else if (controllines.alu_op == AluOps_Lshift) begin
+            return lhs << shamt;
+        end else if (controllines.alu_op == AluOps_Rshift) begin
+            return lhs >> shamt;
+        end else begin // Subtract
+            return lhs - rhs;
+        end 
     end
+
 endfunction
 
 endpackage
+
+// TODO for branching
+// Bluespec supports the usual boolean operators:
+
+// a == b
+// a > b
+// a < b
+// a != b
+// a >= b
+// a <= b

@@ -5,6 +5,7 @@ export Word_T;
 export Valid_T;
 export RF_T (..);
 export CL_T (..);
+export AluOps (..);
 
 
 // define types used throughout the implementation
@@ -46,16 +47,30 @@ typedef struct  {
     Word_T r31;
 } RF_T deriving (Bits, Eq);
 
+typedef enum {
+    AluOps_Unset = 0,
+    AluOps_Add = 1,
+    AluOps_Sub = 2,
+    AluOps_Slt = 3,
+    AluOps_And = 4,
+    AluOps_Or  = 5,
+    AluOps_Xor = 6,
+    AluOps_Lshift = 7,
+    AluOps_Rshift = 8
+} AluOps deriving (Eq, Bits);
+
 typedef struct { // Control Lines
     Bool alu_pc_in;
     Bool alu_imm_in;
-    Bool alu_add;
+    AluOps alu_op;
     Bool alu_br_eq;
     Bool alu_pc_out;
     Bool data_read;
     Bool data_write;
     Bool rf_update;
     Bool branch_eq;
+    Bool isunsigned;
+    Bool wrap_shift;
 } CL_T deriving (Bits, Eq);
 
 

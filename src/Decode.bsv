@@ -161,12 +161,14 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
     CL_T controllines = ?;
     controllines.alu_pc_in  = False;
     controllines.alu_imm_in = False;
-    controllines.alu_add    = False;
+    controllines.alu_op     = AluOps_Unset;
     controllines.alu_br_eq  = False;
     controllines.alu_pc_out = False;
     controllines.data_read  = False;
     controllines.data_write = False;
     controllines.rf_update  = False;
+    controllines.isunsigned = False;
+    controllines.wrap_shift = False;
 
     decoded.cl              = controllines;
     
@@ -182,7 +184,14 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
     `define opcode_opimm  5'b00100
     `define opcode_op     5'b01100
 
-    `define func3_addsub  3'b000
+    `define func3_addsub  3'b000 // TODO check funct7 for if subtract or not
+    `define func3_slt     3'b010
+    `define func3_sltu    3'b011
+    `define func3_and     3'b111
+    `define func3_or      3'b110
+    `define func3_xor     3'b100
+    `define func3_sl      3'b001
+    `define func3_sr      3'b101
 
     `define func3_beq     3'b000
 
@@ -206,7 +215,7 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
                     decoded.cl.alu_br_eq  = True;
                     decoded.cl.alu_pc_in  = True;
                     decoded.cl.alu_imm_in = True;
-                    decoded.cl.alu_add    = True;
+                    decoded.cl.alu_op     = AluOps_Add;
                     decoded.cl.alu_br_eq  = True;
                     decoded.cl.alu_pc_out = True;
                 end
@@ -226,7 +235,7 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
             case (decoded.funct3) 
                 `func3_lw: begin // Load Word
                     decoded.cl.alu_imm_in = True;
-                    decoded.cl.alu_add    = True;
+                    decoded.cl.alu_op     = AluOps_Add;
                     decoded.cl.data_read  = True;
                     decoded.cl.rf_update  = True;
                 end
@@ -247,7 +256,7 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
             case (decoded.funct3) 
                 `func3_sw: begin // Store Word
                     decoded.cl.alu_imm_in = True;
-                    decoded.cl.alu_add    = True;
+                    decoded.cl.alu_op     = AluOps_Add;
                     decoded.cl.data_write = True;
                 end
                 default: begin  // TODO add other instructions
@@ -264,12 +273,56 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
                 decoded.imm[31:12] = 20'b11111111111111111111; // sign extend the immediate
             end
             case (decoded.funct3) 
-                `func3_addsub: begin // ADD/SUB // TODO account for sub option too
+                `func3_addsub: begin // ADDI
                     decoded.cl.alu_imm_in = True;
-                    decoded.cl.alu_add    = True;
+                    decoded.cl.alu_op     = AluOps_Add;
                     decoded.cl.rf_update  = True;
                 end
-                default: begin  // TODO add other instructions
+                `func3_slt: begin // SLTI
+                    decoded.cl.alu_imm_in = True;
+                    decoded.cl.alu_op     = AluOps_Slt;
+                    decoded.cl.rf_update  = True;
+                end
+                `func3_sltu: begin // SLTIU
+                    decoded.cl.alu_imm_in = True;
+                    decoded.cl.alu_op     = AluOps_Slt;
+                    decoded.cl.isunsigned = True;
+                    decoded.cl.rf_update  = True;
+                end
+                `func3_and: begin // ANDI
+                    decoded.cl.alu_imm_in = True;
+                    decoded.cl.alu_op     = AluOps_And;
+                    decoded.cl.rf_update  = True;
+                end
+                `func3_or: begin // ORI
+                    decoded.cl.alu_imm_in = True;
+                    decoded.cl.alu_op     = AluOps_Or;
+                    decoded.cl.rf_update  = True;
+                end
+                `func3_xor: begin // XORI
+                    decoded.cl.alu_imm_in = True;
+                    decoded.cl.alu_op     = AluOps_Xor;
+                    decoded.cl.rf_update  = True;
+                end
+                `func3_sl: begin // SLLI
+                    decoded.cl.alu_imm_in = True;
+                    decoded.cl.alu_op     = AluOps_Lshift;
+                    decoded.cl.rf_update  = True;
+                end
+                `func3_sr: begin // SRLI / SRAI
+                    if (decoded.funct7 == 0) begin // logical
+                        decoded.cl.alu_imm_in = True;
+                        decoded.cl.alu_op     = AluOps_Rshift;
+                        decoded.cl.rf_update  = True;
+                        decoded.cl.isunsigned = True;
+                    end else begin
+                        decoded.cl.alu_imm_in = True;
+                        decoded.cl.alu_op     = AluOps_Rshift;
+                        decoded.cl.wrap_shift = True;
+                        decoded.cl.rf_update  = True;
+                    end
+                end
+                default: begin
                     // not supported, so stop hart
                     decoded.need_to_invalidate = True;
                 end
@@ -279,9 +332,50 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
         // OP ===========
         `opcode_op: begin
             case (decoded.funct3) 
-                `func3_addsub: begin // ADD/SUB // TODO account for sub option too
-                    decoded.cl.alu_add    = True;
+                `func3_addsub: begin // ADD/SUB
+                    if (decoded.funct7 == 0) begin // Add
+                        decoded.cl.alu_op     = AluOps_Add;
+                        decoded.cl.rf_update  = True;
+                    end else begin
+                        decoded.cl.alu_op     = AluOps_Sub;
+                        decoded.cl.rf_update  = True;
+                    end
+                end
+                `func3_slt: begin // SLT
+                    decoded.cl.alu_op     = AluOps_Slt;
                     decoded.cl.rf_update  = True;
+                end
+                `func3_sltu: begin // SLTU
+                    decoded.cl.alu_op     = AluOps_Slt;
+                    decoded.cl.isunsigned = True;
+                    decoded.cl.rf_update  = True;
+                end
+                `func3_and: begin // AND
+                    decoded.cl.alu_op     = AluOps_And;
+                    decoded.cl.rf_update  = True;
+                end
+                `func3_or: begin // OR
+                    decoded.cl.alu_op     = AluOps_Or;
+                    decoded.cl.rf_update  = True;
+                end
+                `func3_xor: begin // XOR
+                    decoded.cl.alu_op     = AluOps_Xor;
+                    decoded.cl.rf_update  = True;
+                end
+                `func3_sl: begin // SLL
+                    decoded.cl.alu_op     = AluOps_Lshift;
+                    decoded.cl.rf_update  = True;
+                end
+                `func3_sr: begin // SRL / SRA
+                    if (decoded.funct7 == 0) begin // logical
+                        decoded.cl.alu_op     = AluOps_Rshift;
+                        decoded.cl.rf_update  = True;
+                        decoded.cl.isunsigned = True;
+                    end else begin
+                        decoded.cl.alu_op     = AluOps_Rshift;
+                        decoded.cl.wrap_shift = True;
+                        decoded.cl.rf_update  = True;
+                    end
                 end
                 default: begin  // TODO add other instructions
                     // not supported, so stop hart
