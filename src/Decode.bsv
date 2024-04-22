@@ -139,10 +139,6 @@ typedef struct { // DECODE workings TODO MOVE TO TYPES.BSV
 } Decode_T deriving (Bits, Eq);
 
 function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
-    // TODO CREDIT: DECODE LOGIC FROM CLARVI - just transcribed into BSV
-    // but actually now ended up following python sim's logic instead, then transcribed again from bluespec to bluespec
-    // since implemented as put (was a bad idea). plus used the actual RISC-V spec to inform it too, so actually
-    // just really used it for the binary conversions
 
     Decode_T decoded = ?;
     decoded.opext   = instr[1 :0 ];
@@ -186,6 +182,10 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
     `define opcode_store  5'b01000
     `define opcode_opimm  5'b00100
     `define opcode_op     5'b01100
+    `define opcode_lui    5'b01101
+    `define opcode_auipc  5'b00101
+    `define opcode_jal    5'b11011
+    `define opcode_jalr   5'b11001
 
     `define func3_addsub  3'b000 // TODO check funct7 for if subtract or not
     `define func3_slt     3'b010
@@ -458,15 +458,56 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
             endcase
         end
 
+        // LUI ===========
+        `opcode_lui: begin
+            decoded.imm[31:12]    = instr[31:12];
+            decoded.cl.alu_imm_in = True;
+            decoded.cl.alu_op     = AluOps_Passthrough;
+            decoded.cl.rf_update  = True;
+        end
+
+        // AUIPC ===========
+        `opcode_auipc: begin
+            decoded.imm[31:12]    = instr[31:12];
+            decoded.cl.alu_pc_in  = True;
+            decoded.cl.alu_imm_in = True;
+            decoded.cl.alu_op     = AluOps_Add;
+            decoded.cl.rf_update  = True;
+        end
+
+        // JAL ===========  rd=pc+4, pc=pc+imm
+        `opcode_jal: begin
+            decoded.imm[31]       = instr[20];
+            decoded.imm[10:1]     = instr[30:21];
+            decoded.imm[11]       = instr[20];
+            decoded.imm[19:12]    = instr[19:12];
+            // TODO sign extend imm
+            decoded.cl.alu_pc_in  = True;
+            decoded.cl.alu_imm_in = True; // TODO shift imm 1 place!
+            decoded.cl.alu_op     = AluOps_Add;
+            decoded.cl.alu_pc_out = True;
+            decoded.cl.alu_inc_out= True;
+            decoded.cl.rf_update  = True;
+        end
+
+        // JALR ===========  rd=pc+4, pc=rs1+imm
+        `opcode_jal: begin
+            decoded.imm[11:0]     = instr[31:20];
+            // TODO sign extend imm
+            decoded.cl.alu_imm_in = True;
+            decoded.cl.alu_op     = AluOps_Add;
+            decoded.cl.alu_pc_out = True;
+            decoded.cl.alu_inc_out= True;
+            decoded.cl.rf_update  = True;
+        end
+
         // OTHER OPCODE ==========
-        default: begin // TODO add other instructions
+        default: begin
             // Not supported, so stop hart
             decoded.need_to_invalidate = True;
         end  
         
     endcase
-
-    // TODO CREDIT END: DECODE LOGIC FROM CLARVI
 
 
     decoded.rfrs1 = case (decoded.rs1)

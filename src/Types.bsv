@@ -58,7 +58,8 @@ typedef enum {
     AluOps_Or,
     AluOps_Xor,
     AluOps_Lshift,
-    AluOps_Rshift
+    AluOps_Rshift,
+    AluOps_Passthrough
 } AluOps deriving (Eq, Bits);
 
 typedef enum {
@@ -90,6 +91,7 @@ typedef struct { // Control Lines
     Bool branch_eq;
     Bool isunsigned; // TODO rename e.g. to: ALU unsigned
     Bool wrap_shift;
+    Bool alu_inc_out; // for JAL/JALR
 } CL_T deriving (Bits, Eq);
 
 

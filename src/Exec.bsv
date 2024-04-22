@@ -136,8 +136,11 @@ module mkExec(ExecIfc);
 
     interface Get get_alu_result;
         method ActionValue#(Word_T) get ();
-            let result = calc_alu(rfrs1, rfrs2, imm, pc, controllines);
-            return result;
+            if (controllines.alu_inc_out) begin
+                return pc+4;
+            end else begin
+                return calc_alu(rfrs1, rfrs2, imm, pc, controllines);
+            end
         endmethod
     endinterface
 
@@ -171,6 +174,8 @@ function Word_T calc_alu(Word_T rfrs1, Word_T rfrs2, Word_T imm, Word_T pc, CL_T
             return pack(lhs << shamt);
         end else if (controllines.alu_op == AluOps_Rshift) begin
             return pack(lhs >> shamt);
+        end else if (controllines.alu_op == AluOps_Passthrough) begin
+            return pack(rhs);
         end else begin // Subtract
             return pack(lhs - rhs);
         end 
@@ -192,6 +197,8 @@ function Word_T calc_alu(Word_T rfrs1, Word_T rfrs2, Word_T imm, Word_T pc, CL_T
             return lhs << shamt;
         end else if (controllines.alu_op == AluOps_Rshift) begin
             return lhs >> shamt;
+        end else if (controllines.alu_op == AluOps_Passthrough) begin
+            return rhs;
         end else begin // Subtract
             return lhs - rhs;
         end 
