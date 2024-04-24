@@ -156,7 +156,7 @@ function Word_T calc_alu(Word_T rfrs1, Word_T rfrs2, Word_T imm, Word_T pc, CL_T
     Int#(32) rhssigned = unpack(rhsunsigned);
     let shamt = rhsunsigned[4:0];
 
-    if (controllines.isunsigned == False || controllines.wrap_shift) begin
+    if (controllines.isunsigned == False || controllines.arith_shift) begin
         // signed, or use signed anyway since want an arithmetic / wrapping shift
         let lhs = lhssigned;
         let rhs = rhssigned;

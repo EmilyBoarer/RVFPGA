@@ -149,6 +149,7 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
     decoded.rs2     = instr[24:20];
     decoded.funct7  = instr[31:25];
     decoded.funct12 = instr[31:20];
+    let shamt       = instr[24:20];
     decoded.need_to_invalidate = False;
     decoded.imm     = 0;
     decoded.rfrs1   = 0;
@@ -167,7 +168,8 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
     controllines.data_size      = DatSize_Word;
     controllines.rf_update      = False;
     controllines.isunsigned     = False;
-    controllines.wrap_shift     = False;
+    controllines.arith_shift    = False;
+    controllines.alu_inc_out    = False;
 
     decoded.cl              = controllines;
     
@@ -187,7 +189,7 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
     `define opcode_jal    5'b11011
     `define opcode_jalr   5'b11001
 
-    `define func3_addsub  3'b000 // TODO check funct7 for if subtract or not
+    `define func3_addsub  3'b000
     `define func3_slt     3'b010
     `define func3_sltu    3'b011
     `define func3_and     3'b111
@@ -379,11 +381,15 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
                     decoded.cl.rf_update  = True;
                 end
                 `func3_sl: begin // SLLI
+                    decoded.imm = 0;
+                    decoded.imm[4:0] = shamt;
                     decoded.cl.alu_imm_in = True;
                     decoded.cl.alu_op     = AluOps_Lshift;
                     decoded.cl.rf_update  = True;
                 end
                 `func3_sr: begin // SRLI / SRAI
+                    decoded.imm = 0;
+                    decoded.imm[4:0] = shamt;
                     if (decoded.funct7 == 0) begin // logical
                         decoded.cl.alu_imm_in = True;
                         decoded.cl.alu_op     = AluOps_Rshift;
@@ -392,7 +398,7 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
                     end else begin
                         decoded.cl.alu_imm_in = True;
                         decoded.cl.alu_op     = AluOps_Rshift;
-                        decoded.cl.wrap_shift = True;
+                        decoded.cl.arith_shift= True;
                         decoded.cl.rf_update  = True;
                     end
                 end
@@ -447,7 +453,7 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
                         decoded.cl.isunsigned = True;
                     end else begin
                         decoded.cl.alu_op     = AluOps_Rshift;
-                        decoded.cl.wrap_shift = True;
+                        decoded.cl.arith_shift= True;
                         decoded.cl.rf_update  = True;
                     end
                 end
@@ -491,9 +497,11 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
         end
 
         // JALR ===========  rd=pc+4, pc=rs1+imm
-        `opcode_jal: begin
-            decoded.imm[11:0]     = instr[31:20];
-            // TODO sign extend imm
+        `opcode_jalr: begin
+            decoded.imm[11:0] = decoded.funct12;
+            if (decoded.imm[11] == 1) begin 
+                decoded.imm[31:12] = 20'b11111111111111111111; // sign extend the immediate
+            end
             decoded.cl.alu_imm_in = True;
             decoded.cl.alu_op     = AluOps_Add;
             decoded.cl.alu_pc_out = True;
