@@ -169,7 +169,281 @@ data = {
             "seed":         15,
         },
     ],
+    "RVFPGA(EuArch-3)":[ ## EuArch-2 plus full base ISA
+        {
+            "alm":          2898, ## this one done before correctness testing
+            "totalreg":     6445, ## - may be invalid if have to change some
+            "pins":         247,  ## bits if incorrect execution
+            "totalbram":    147456,
+            "fmax85":       96.37,
+            "fmax0":        97.95,
+            "seed":         1,
+        },
+        {
+            "alm":          2891, ## this one done before correctness testing
+            "totalreg":     6444, ## - may be invalid if have to change some
+            "pins":         247,  ## bits if incorrect execution
+            "totalbram":    147456,
+            "fmax85":       90.42,
+            "fmax0":        92.29,
+            "seed":         2,
+        },
+        {
+            "alm":          2949, ## this one done before correctness testing
+            "totalreg":     6445, ## - may be invalid if have to change some
+            "pins":         247,  ## bits if incorrect execution
+            "totalbram":    147456,
+            "fmax85":       96.86,
+            "fmax0":        99.79,
+            "seed":         3,
+        },
+        {
+            "alm":          2893, ## this one done before correctness testing
+            "totalreg":     6445, ## - may be invalid if have to change some
+            "pins":         247,  ## bits if incorrect execution
+            "totalbram":    147456,
+            "fmax85":       90.06,
+            "fmax0":        91.39,
+            "seed":         4,
+        },
+        {
+            "alm":          2933, ## this one done before correctness testing
+            "totalreg":     6445, ## - may be invalid if have to change some
+            "pins":         247,  ## bits if incorrect execution
+            "totalbram":    147456,
+            "fmax85":       92.53,
+            "fmax0":        95.45,
+            "seed":         5,
+        },
+        {
+            "alm":          3161, ## this one done before correctness testing
+            "totalreg":     6445, ## - may be invalid if have to change some
+            "pins":         247,  ## bits if incorrect execution
+            "totalbram":    147456,
+            "fmax85":       93.4,
+            "fmax0":        95.61,
+            "seed":         6,
+        },
+        {
+            "alm":          2877, ## this one done before correctness testing
+            "totalreg":     6445, ## - may be invalid if have to change some
+            "pins":         247,  ## bits if incorrect execution
+            "totalbram":    147456,
+            "fmax85":       97.53,
+            "fmax0":        100.18,
+            "seed":         7,
+        },
+        {
+            "alm":          2930, ## this one done before correctness testing
+            "totalreg":     6445, ## - may be invalid if have to change some
+            "pins":         247,  ## bits if incorrect execution
+            "totalbram":    147456,
+            "fmax85":       100.27,
+            "fmax0":        103.27,
+            "seed":         8,
+        },
+        {
+            "alm":          2992, ## this one done before correctness testing
+            "totalreg":     6445, ## - may be invalid if have to change some
+            "pins":         247,  ## bits if incorrect execution
+            "totalbram":    147456,
+            "fmax85":       89.91,
+            "fmax0":        90.9,
+            "seed":         9,
+        },
+        {
+            "alm":          2942, ## this one done before correctness testing
+            "totalreg":     6445, ## - may be invalid if have to change some
+            "pins":         247,  ## bits if incorrect execution
+            "totalbram":    147456,
+            "fmax85":       96.09,
+            "fmax0":        98.32,
+            "seed":         10,
+        },
+        {
+            "alm":          2993, ## this one done before correctness testing
+            "totalreg":     6445, ## - may be invalid if have to change some
+            "pins":         247,  ## bits if incorrect execution
+            "totalbram":    147456,
+            "fmax85":       93.76,
+            "fmax0":        96.47,
+            "seed":         11,
+        },
+        {
+            "alm":          2908, ## this one done before correctness testing
+            "totalreg":     6445, ## - may be invalid if have to change some
+            "pins":         247,  ## bits if incorrect execution
+            "totalbram":    147456,
+            "fmax85":       88.57,
+            "fmax0":        91.66,
+            "seed":         12,
+        },
+        {
+            "alm":          2996, ## this one done before correctness testing
+            "totalreg":     6445, ## - may be invalid if have to change some
+            "pins":         247,  ## bits if incorrect execution
+            "totalbram":    147456,
+            "fmax85":       90.18,
+            "fmax0":        91.8,
+            "seed":         13,
+        },
+        {
+            "alm":          2900, ## this one done before correctness testing
+            "totalreg":     6445, ## - may be invalid if have to change some
+            "pins":         247,  ## bits if incorrect execution
+            "totalbram":    147456,
+            "fmax85":       88.11,
+            "fmax0":        91.2,
+            "seed":         14,
+        },
+        {
+            "alm":          2884, ## this one done before correctness testing
+            "totalreg":     6445, ## - may be invalid if have to change some
+            "pins":         247,  ## bits if incorrect execution
+            "totalbram":    147456,
+            "fmax85":       88.65,
+            "fmax0":        90.85,
+            "seed":         15,
+        },
+    ],
     "CLARVI":[
+        {
+            "alm":          2800,
+            "totalreg":     3572,
+            "pins":         246,
+            "totalbram":    2621750,
+            "fmax85":       71.62,
+            "fmax0":        73.46,
+            "seed":         1,
+        },
+        {
+            "alm":          2828,
+            "totalreg":     3587,
+            "pins":         246,
+            "totalbram":    2621750,
+            "fmax85":       70.95,
+            "fmax0":        73.82,
+            "seed":         2,
+        },
+        {
+            "alm":          2832,
+            "totalreg":     3600,
+            "pins":         246,
+            "totalbram":    2621750,
+            "fmax85":       66.72,
+            "fmax0":        69.46,
+            "seed":         3,
+        },
+        {
+            "alm":          2813,
+            "totalreg":     3594,
+            "pins":         246,
+            "totalbram":    2621750,
+            "fmax85":       70.99,
+            "fmax0":        72.48,
+            "seed":         4,
+        },
+        {
+            "alm":          2831,
+            "totalreg":     3578,
+            "pins":         246,
+            "totalbram":    2621750,
+            "fmax85":       71.64,
+            "fmax0":        73.32,
+            "seed":         5,
+        },
+        {
+            "alm":          2811,
+            "totalreg":     3590,
+            "pins":         246,
+            "totalbram":    2621750,
+            "fmax85":       74.6,
+            "fmax0":        75.55,
+            "seed":         6,
+        },
+        { # 4:17 to run everything
+            "alm":          2812,
+            "totalreg":     3603,
+            "pins":         246,
+            "totalbram":    2621750,
+            "fmax85":       71.06,
+            "fmax0":        72.56,
+            "seed":         7,
+        },
+        { # 4:47
+            "alm":          2815,
+            "totalreg":     3585,
+            "pins":         246,
+            "totalbram":    2621750,
+            "fmax85":       72.65,
+            "fmax0":        74.24,
+            "seed":         8,
+        },
+        { # 4:43
+            "alm":          2806,
+            "totalreg":     3570,
+            "pins":         246,
+            "totalbram":    2621750,
+            "fmax85":       65.89,
+            "fmax0":        68.04,
+            "seed":         9,
+        },
+        { # 4:51
+            "alm":          2830,
+            "totalreg":     3615,
+            "pins":         246,
+            "totalbram":    2621750,
+            "fmax85":       69.4,
+            "fmax0":        70.9,
+            "seed":         10,
+        },
+        { # 4:63
+            "alm":          2823,
+            "totalreg":     3621,
+            "pins":         246,
+            "totalbram":    2621750,
+            "fmax85":       68.64,
+            "fmax0":        70.27,
+            "seed":         11,
+        },
+        { # 4:55
+            "alm":          2822,
+            "totalreg":     3584,
+            "pins":         246,
+            "totalbram":    2621750,
+            "fmax85":       69.72,
+            "fmax0":        70.77,
+            "seed":         12,
+        },
+        { # 4:16
+            "alm":          2806,
+            "totalreg":     3590,
+            "pins":         246,
+            "totalbram":    2621750,
+            "fmax85":       69.17,
+            "fmax0":        70.39,
+            "seed":         13,
+        },
+        { # 4:39
+            "alm":          2816,
+            "totalreg":     3594,
+            "pins":         246,
+            "totalbram":    2621750,
+            "fmax85":       73.35,
+            "fmax0":        73.9,
+            "seed":         14,
+        },
+        { # 4:16
+            "alm":          2813,
+            "totalreg":     3570,
+            "pins":         246,
+            "totalbram":    2621750,
+            "fmax85":       68.28,
+            "fmax0":        69.5,
+            "seed":         15,
+        },
+    ],
+    "CLARVI (CPI=1.5)":[
         {
             "alm":          2800,
             "totalreg":     3572,
@@ -311,25 +585,31 @@ data = {
 harts = {
     "blinky":0,
     "RVFPGA(EuArch-2)":6,
+    "RVFPGA(EuArch-3)":6,
     # "RVFPGA(EuArch-2) (1-hart)":1,
     # "RVFPGA(EuArch-2) (3-hart)":3,
     "CLARVI":1,
+    "CLARVI (CPI=1.5)":1,
 }
 
 expected_instructions_per_cycle = {
     "blinky":0,
     "RVFPGA(EuArch-2)":1/harts["RVFPGA(EuArch-2)"], # branching not a concern under our memory model
+    "RVFPGA(EuArch-3)":1/harts["RVFPGA(EuArch-3)"], # branching not a concern under our memory model
     # "RVFPGA(EuArch-2) (1-hart)":1/harts["RVFPGA(EuArch-2)"], # branching not a concern under our memory model
     # "RVFPGA(EuArch-2) (3-hart)":1/harts["RVFPGA(EuArch-2)"], # branching not a concern under our memory model
     "CLARVI":8/11, # accounts for branching, but not stalls from memory not ready => parity with euarch
+    "CLARVI (CPI=1.5)":1/1.5, # according to https://github.com/ucam-comparch/clarvi README.md CPI
 }
 
 
 
 ## plot
 fig, ax = plt.subplots()
+FS = 13
 
 def box_plot_things(ax, f, yunit, xunit, label=True):
+    plt.rcParams.update({'font.size': FS})
 
     labs = []
     vals = []
@@ -350,10 +630,13 @@ def box_plot_things(ax, f, yunit, xunit, label=True):
             vert=True,
             labels=["" for _ in range(len(labs))],
             widths=0.7)
-        # ax.set_ylabel("")
+        # ax.set_ylabel("")    
+    
+    for label in (ax.get_xticklabels() + ax.get_yticklabels()):
+        label.set_fontsize(FS)
 
-    ax.set_ylabel(yunit)
-    ax.set_title(xunit)
+    ax.set_ylabel(yunit, fontsize = FS)
+    ax.set_title(xunit, fontsize = FS)
     ax.yaxis.grid(True)
     ax.set_ylim(ymin=0)
 
@@ -365,33 +648,33 @@ fig.set_size_inches(6,7)
 #                 lambda model, runs: ([(run["fmax85"]+run["fmax0"])/2 for run in runs],model),
 #                 "MHz", "mean Fmax [higher = better]")
 
-## plot performance
-box_plot_things(ax,
-                lambda model, runs: ([
-                    expected_instructions_per_cycle[model] * harts[model] * run["fmax0"]
-                    for run in runs],
-                    f"{model}\n(1,3,6 harts)" if model == "RVFPGA(EuArch-2)" else model ),
-                "mega-instructions per second", "Expected Performance [higher = better]")
-box_plot_things(ax,
-                lambda model, runs: ([
-                    expected_instructions_per_cycle[model] * (1 if model == "RVFPGA(EuArch-2)" else harts[model]) * run["fmax0"]
-                    for run in runs],
-                    "" if model == "RVFPGA(EuArch-2)" else None ),
-                "mega-instructions per second", "Expected Performance [higher = better]", False)
-box_plot_things(ax,
-                lambda model, runs: ([
-                    expected_instructions_per_cycle[model] * (3 if model == "RVFPGA(EuArch-2)" else harts[model]) * run["fmax0"]
-                    for run in runs],
-                    "" if model == "RVFPGA(EuArch-2)" else None),
-                "mega-instructions per second", "Expected Performance [higher = better]", False)
-
-
-
-
-# ## Area etc..
+# ## plot performance
 # box_plot_things(ax,
-#                 lambda model, runs: ([(run["alm"]/maxvals["alm"])*100 for run in runs],model),
-#                 "%", "Logic Utilisation [lower = better]")
+#                 lambda model, runs: ([
+#                     expected_instructions_per_cycle[model] * harts[model] * run["fmax0"]
+#                     for run in runs],
+#                     f"{model}\n(1,3,6 harts)" if "RVFPGA" in model else model ),
+#                 "mega-instructions per second", "Expected Performance [higher = better]")
+# box_plot_things(ax,
+#                 lambda model, runs: ([
+#                     expected_instructions_per_cycle[model] * (1 if "RVFPGA" in model else harts[model]) * run["fmax0"]
+#                     for run in runs],
+#                     "" if "RVFPGA" in model else None ),
+#                 "mega-instructions per second", "Expected Performance [higher = better]", False)
+# box_plot_things(ax,
+#                 lambda model, runs: ([
+#                     expected_instructions_per_cycle[model] * (3 if "RVFPGA" in model else harts[model]) * run["fmax0"]
+#                     for run in runs],
+#                     "" if "RVFPGA" in model else None),
+#                 "mega-instructions per second", "Expected Performance [higher = better]", False)
+
+
+
+
+## Area etc..
+box_plot_things(ax,
+                lambda model, runs: ([run["alm"] for run in runs],model),
+                "Number of ALMs", "Logic Utilisation [lower = better]")
 
 
 # box_plot_things(ax,
@@ -407,5 +690,6 @@ box_plot_things(ax,
             # "fmax85":       71.62,
             # "fmax0":        73.46,
             # "seed":         1,
+
 
 plt.show()
