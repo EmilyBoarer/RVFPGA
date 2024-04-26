@@ -27,7 +27,7 @@ interface DecodeIfc; // using the same types as the rest of the system
     interface Get#(CL_T)    get_ctrl;
 endinterface
 
-module mkDecode#(BlockRam#(Bit#(12), Bit#(32)) instrMem)(DecodeIfc);
+module mkDecode#(BlockRam#(Bit#(12), Bit#(32)) instrMem, BlockRamTrueDualPort#(Bit#(8), Bit#(32)) rfMem)(DecodeIfc);
     Reg#(Valid_T) valid <- mkReg(0);
     Reg#(PC_T) pc <- mkReg(0);
     Reg#(RF_T) rf <- mkReg(unpack(0));
@@ -74,6 +74,18 @@ module mkDecode#(BlockRam#(Bit#(12), Bit#(32)) instrMem)(DecodeIfc);
             end else begin
                 instr <= 255; // TODO replace with a NOP?? or stall-like thing??
             end
+
+            let decoded = decode_instruction(instr, rf, rfMem, valid);
+            // initialise the read requests
+            Bit#(8) rs1 = 0;
+            rs1[4:0] = decoded.rs2;
+            rs1[7:5] = truncate(unpack(valid));
+            Bit#(8) rs2 = 0;
+            rs2[4:0] = decoded.rs2;
+            rs2[7:5] = truncate(unpack(valid));
+            rfMem.putA(False, True, rs1, 0);
+            rfMem.putB(False, True, rs2, 0);
+
         endmethod
     endinterface
 
@@ -81,7 +93,7 @@ module mkDecode#(BlockRam#(Bit#(12), Bit#(32)) instrMem)(DecodeIfc);
     // TODO each of these fucntions are the ones that need the comb logic (+get_valid which is above)
     interface Get get_valid;
         method ActionValue#(Valid_T) get ();
-            let decoded = decode_instruction(instr, rf);
+            let decoded = decode_instruction(instr, rf, rfMem, valid);
             if (decoded.need_to_invalidate) begin
                 return 0;
             end else begin
@@ -91,31 +103,31 @@ module mkDecode#(BlockRam#(Bit#(12), Bit#(32)) instrMem)(DecodeIfc);
     endinterface
     interface Get get_rd;
         method ActionValue#(Bit#(5)) get ();
-            let decoded = decode_instruction(instr, rf);
+            let decoded = decode_instruction(instr, rf, rfMem, valid);
             return decoded.rd;
         endmethod
     endinterface
     interface Get get_rfrs1;
         method ActionValue#(Word_T) get ();
-            let decoded = decode_instruction(instr, rf);
+            let decoded = decode_instruction(instr, rf, rfMem, valid);
             return decoded.rfrs1;
         endmethod
     endinterface
     interface Get get_rfrs2;
         method ActionValue#(Word_T) get ();
-            let decoded = decode_instruction(instr, rf);
+            let decoded = decode_instruction(instr, rf, rfMem, valid);
             return decoded.rfrs2;
         endmethod
     endinterface
     interface Get get_imm;
         method ActionValue#(Word_T) get ();
-            let decoded = decode_instruction(instr, rf);
+            let decoded = decode_instruction(instr, rf, rfMem, valid);
             return decoded.imm;
         endmethod
     endinterface
     interface Get get_ctrl;
         method ActionValue#(CL_T) get ();
-            let decoded = decode_instruction(instr, rf);
+            let decoded = decode_instruction(instr, rf, rfMem, valid);
             return decoded.cl;
         endmethod
     endinterface
@@ -138,7 +150,7 @@ typedef struct { // DECODE workings TODO MOVE TO TYPES.BSV
     Word_T   rfrs2;
 } Decode_T deriving (Bits, Eq);
 
-function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
+function Decode_T decode_instruction(Bit#(32) instr, RF_T rf, BlockRamTrueDualPort#(Bit#(8), Bit#(32)) rfMem, Valid_T valid);
 
     Decode_T decoded = ?;
     decoded.opext   = instr[1 :0 ];
@@ -518,75 +530,78 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
     endcase
 
 
-    decoded.rfrs1 = case (decoded.rs1)
-        0: 0;
-        1: rf.r1 ;
-        2: rf.r2 ;
-        3: rf.r3 ;
-        4: rf.r4 ;
-        5: rf.r5 ;
-        6: rf.r6 ;
-        7: rf.r7 ;
-        8: rf.r8 ;
-        9: rf.r9 ;
-        10: rf.r10 ;
-        11: rf.r11 ;
-        12: rf.r12 ;
-        13: rf.r13 ;
-        14: rf.r14 ;
-        15: rf.r15 ;
-        16: rf.r16 ;
-        17: rf.r17 ;
-        18: rf.r18 ;
-        19: rf.r19 ;
-        20: rf.r20 ;
-        21: rf.r21 ;
-        22: rf.r22 ;
-        23: rf.r23 ;
-        24: rf.r24 ;
-        25: rf.r25 ;
-        26: rf.r26 ;
-        27: rf.r27 ;
-        28: rf.r28 ;
-        29: rf.r29 ;
-        30: rf.r30 ;
-        31: rf.r31 ;
-    endcase ;
+    // decoded.rfrs1 = case (decoded.rs1)
+    //     0: 0;
+    //     1: rf.r1 ;
+    //     2: rf.r2 ;
+    //     3: rf.r3 ;
+    //     4: rf.r4 ;
+    //     5: rf.r5 ;
+    //     6: rf.r6 ;
+    //     7: rf.r7 ;
+    //     8: rf.r8 ;
+    //     9: rf.r9 ;
+    //     10: rf.r10 ;
+    //     11: rf.r11 ;
+    //     12: rf.r12 ;
+    //     13: rf.r13 ;
+    //     14: rf.r14 ;
+    //     15: rf.r15 ;
+    //     16: rf.r16 ;
+    //     17: rf.r17 ;
+    //     18: rf.r18 ;
+    //     19: rf.r19 ;
+    //     20: rf.r20 ;
+    //     21: rf.r21 ;
+    //     22: rf.r22 ;
+    //     23: rf.r23 ;
+    //     24: rf.r24 ;
+    //     25: rf.r25 ;
+    //     26: rf.r26 ;
+    //     27: rf.r27 ;
+    //     28: rf.r28 ;
+    //     29: rf.r29 ;
+    //     30: rf.r30 ;
+    //     31: rf.r31 ;
+    // endcase ;
 
-    decoded.rfrs2 = case (decoded.rs2)
-        0: 0;
-        1: rf.r1 ;
-        2: rf.r2 ;
-        3: rf.r3 ;
-        4: rf.r4 ;
-        5: rf.r5 ;
-        6: rf.r6 ;
-        7: rf.r7 ;
-        8: rf.r8 ;
-        9: rf.r9 ;
-        10: rf.r10 ;
-        11: rf.r11 ;
-        12: rf.r12 ;
-        13: rf.r13 ;
-        14: rf.r14 ;
-        15: rf.r15 ;
-        16: rf.r16 ;
-        17: rf.r17 ;
-        18: rf.r18 ;
-        19: rf.r19 ;
-        20: rf.r20 ;
-        21: rf.r21 ;
-        22: rf.r22 ;
-        23: rf.r23 ;
-        24: rf.r24 ;
-        25: rf.r25 ;
-        26: rf.r26 ;
-        27: rf.r27 ;
-        28: rf.r28 ;
-        29: rf.r29 ;
-        30: rf.r30 ;
-        31: rf.r31 ;
-    endcase ;
+    // decoded.rfrs2 = case (decoded.rs2)
+    //     0: 0;
+    //     1: rf.r1 ;
+    //     2: rf.r2 ;
+    //     3: rf.r3 ;
+    //     4: rf.r4 ;
+    //     5: rf.r5 ;
+    //     6: rf.r6 ;
+    //     7: rf.r7 ;
+    //     8: rf.r8 ;
+    //     9: rf.r9 ;
+    //     10: rf.r10 ;
+    //     11: rf.r11 ;
+    //     12: rf.r12 ;
+    //     13: rf.r13 ;
+    //     14: rf.r14 ;
+    //     15: rf.r15 ;
+    //     16: rf.r16 ;
+    //     17: rf.r17 ;
+    //     18: rf.r18 ;
+    //     19: rf.r19 ;
+    //     20: rf.r20 ;
+    //     21: rf.r21 ;
+    //     22: rf.r22 ;
+    //     23: rf.r23 ;
+    //     24: rf.r24 ;
+    //     25: rf.r25 ;
+    //     26: rf.r26 ;
+    //     27: rf.r27 ;
+    //     28: rf.r28 ;
+    //     29: rf.r29 ;
+    //     30: rf.r30 ;
+    //     31: rf.r31 ;
+    // endcase ;
+
+    decoded.rfrs1 = 0;
+    decoded.rfrs2 = 0;
 
     return decoded;
 endfunction

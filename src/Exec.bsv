@@ -3,6 +3,8 @@ package Exec;
 import GetPut::*;
 import Types::*;
 
+import BlockRAMv::*;
+
 export ExecIfc (..);
 export mkExec;
 
@@ -28,7 +30,7 @@ interface ExecIfc; // using the same types as the rest of the system
     interface Get#(CL_T)    get_ctrl;
 endinterface
 
-module mkExec(ExecIfc);
+module mkExec#(BlockRamTrueDualPort#(Bit#(8), Bit#(32)) rfMem)(ExecIfc);
     Reg#(Valid_T) valid <- mkReg(0);
     Reg#(PC_T) pc <- mkReg(0);
     Reg#(RF_T) rf <- mkReg(unpack(0));
@@ -112,7 +114,10 @@ module mkExec(ExecIfc);
 
     interface Put put_rfrs2;
         method Action put (Word_T newrfrs2);
-            rfrs2 <= newrfrs2;
+            if (rfMem.dataOutValidB) begin
+                rfrs2 <= rfMem.dataOutB;
+            end
+            // rfrs2 <= newrfrs2;
         endmethod
     endinterface
     interface Get get_rfrs2;
@@ -124,7 +129,10 @@ module mkExec(ExecIfc);
 
     interface Put put_rfrs1;
         method Action put (Word_T newrfrs1);
-            rfrs1 <= newrfrs1;
+            if (rfMem.dataOutValidA) begin
+                rfrs1 <= rfMem.dataOutA;
+            end
+            // rfrs1 <= newrfrs1;
         endmethod
     endinterface
     interface Put put_imm;

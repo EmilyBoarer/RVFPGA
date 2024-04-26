@@ -23,7 +23,7 @@ interface RfupdateIfc; // using the same types as the rest of the system
     interface Put#(CL_T)    put_ctrl;
 endinterface
 
-module mkRfupdate#(BlockRamTrueDualPort#(Bit#(9), Bit#(32)) dataMem)(RfupdateIfc);
+module mkRfupdate#(BlockRamTrueDualPort#(Bit#(9), Bit#(32)) dataMem, BlockRamTrueDualPort#(Bit#(8), Bit#(32)) rfMem)(RfupdateIfc);
     Reg#(Valid_T) valid <- mkReg(0);
     Reg#(PC_T) pc <- mkReg(0);
     Reg#(RF_T) rf <- mkReg(unpack(0));
@@ -91,42 +91,50 @@ module mkRfupdate#(BlockRamTrueDualPort#(Bit#(9), Bit#(32)) dataMem)(RfupdateIfc
                 v = value;
             end
             if (controllines.rf_update) begin
-                let newrf = rf;
-                case (rd)
-                    0: begin end // can't update r0! - always zero
-                    1: newrf.r1 = v;
-                    2: newrf.r2 = v;
-                    3: newrf.r3 = v;
-                    4: newrf.r4 = v;
-                    5: newrf.r5 = v;
-                    6: newrf.r6 = v;
-                    7: newrf.r7 = v;
-                    8: newrf.r8 = v;
-                    9: newrf.r9 = v;
-                    10: newrf.r10 = v;
-                    11: newrf.r11 = v;
-                    12: newrf.r12 = v;
-                    13: newrf.r13 = v;
-                    14: newrf.r14 = v;
-                    15: newrf.r15 = v;
-                    16: newrf.r16 = v;
-                    17: newrf.r17 = v;
-                    18: newrf.r18 = v;
-                    19: newrf.r19 = v;
-                    20: newrf.r20 = v;
-                    21: newrf.r21 = v;
-                    22: newrf.r22 = v;
-                    23: newrf.r23 = v;
-                    24: newrf.r24 = v;
-                    25: newrf.r25 = v;
-                    26: newrf.r26 = v;
-                    27: newrf.r27 = v;
-                    28: newrf.r28 = v;
-                    29: newrf.r29 = v;
-                    30: newrf.r30 = v;
-                    31: newrf.r31 = v;
-                endcase
-                return newrf;
+                // let newrf = rf;
+                // case (rd)
+                //     0: begin end // can't update r0! - always zero
+                //     1: newrf.r1 = v;
+                //     2: newrf.r2 = v;
+                //     3: newrf.r3 = v;
+                //     4: newrf.r4 = v;
+                //     5: newrf.r5 = v;
+                //     6: newrf.r6 = v;
+                //     7: newrf.r7 = v;
+                //     8: newrf.r8 = v;
+                //     9: newrf.r9 = v;
+                //     10: newrf.r10 = v;
+                //     11: newrf.r11 = v;
+                //     12: newrf.r12 = v;
+                //     13: newrf.r13 = v;
+                //     14: newrf.r14 = v;
+                //     15: newrf.r15 = v;
+                //     16: newrf.r16 = v;
+                //     17: newrf.r17 = v;
+                //     18: newrf.r18 = v;
+                //     19: newrf.r19 = v;
+                //     20: newrf.r20 = v;
+                //     21: newrf.r21 = v;
+                //     22: newrf.r22 = v;
+                //     23: newrf.r23 = v;
+                //     24: newrf.r24 = v;
+                //     25: newrf.r25 = v;
+                //     26: newrf.r26 = v;
+                //     27: newrf.r27 = v;
+                //     28: newrf.r28 = v;
+                //     29: newrf.r29 = v;
+                //     30: newrf.r30 = v;
+                //     31: newrf.r31 = v;
+                // endcase
+                // return newrf;
+
+                // RF BRAM:
+                Bit#(8) addr = 0;
+                addr[4:0] = rd;
+                addr[7:5] = truncate(unpack(valid));
+                // rfMem.putA(True, False, addr, v); // ignore 2 least sig bits since StoreWord // save to memory
+                return rf;
+                // end BRAM bits
             end else begin
                 return rf;
             end
