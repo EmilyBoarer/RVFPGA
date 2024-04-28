@@ -129,6 +129,7 @@ typedef struct { // DECODE workings TODO MOVE TO TYPES.BSV
     Bit#(3)  funct3;
     Bit#(5)  rs1;
     Bit#(5)  rs2;
+    Bit#(5)  funct5;
     Bit#(7)  funct7;
     Bit#(12) funct12;
     Bool     need_to_invalidate; // used to invalidate hart if invalid instruction given = a hacky work-around for this CPU, not RISC-V compliant
@@ -148,6 +149,7 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
     decoded.rs1     = instr[19:15];
     decoded.rs2     = instr[24:20];
     decoded.funct7  = instr[31:25];
+    decoded.funct5  = instr[31:27];
     decoded.funct12 = instr[31:20];
     let shamt       = instr[24:20];
     decoded.need_to_invalidate = False;
@@ -170,6 +172,7 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
     controllines.isunsigned     = False;
     controllines.arith_shift    = False;
     controllines.alu_inc_out    = False;
+    controllines.atomic         = False;
 
     decoded.cl              = controllines;
     
@@ -188,6 +191,7 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
     `define opcode_auipc  5'b00101
     `define opcode_jal    5'b11011
     `define opcode_jalr   5'b11001
+    `define opcode_lrsc   5'b01011
 
     `define func3_addsub  3'b000
     `define func3_slt     3'b010
@@ -215,6 +219,8 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
     `define func3_sh      3'b001
     `define func3_sb      3'b000
 
+    `define func5_lr      5'b00010
+    `define func5_sc      5'b00011
     
     case (decoded.opcode)
         // BRANCH ===========
@@ -507,6 +513,28 @@ function Decode_T decode_instruction(Bit#(32) instr, RF_T rf);
             decoded.cl.alu_pc_out = True;
             decoded.cl.alu_inc_out= True;
             decoded.cl.rf_update  = True;
+        end
+
+        // LR/SC ATOMICS =========== 
+        `opcode_lrsc: begin
+            decoded.imm = 0;
+            case (decoded.funct5) 
+                `func5_lr: begin // Load Reserved: RF[rd] = mem[RF[rs1]], and reserve set
+                    decoded.cl.alu_imm_in = True;
+                    decoded.cl.alu_op     = AluOps_Add;
+                    decoded.cl.data_read  = True;
+                    decoded.cl.rf_update  = True;
+                    decoded.cl.atomic     = True;
+                end
+                `func5_sc: begin // Store Conditional: if reserved for us: mem[RF[rs1]] = RF[rs2], RF[rd] = 0, reserved = 0
+                                 //                    else:                                       RF[rd] = 1, reserved = 0
+                    decoded.cl.alu_imm_in = True;
+                    decoded.cl.alu_op     = AluOps_Add;
+                    decoded.cl.data_write = True;
+                    decoded.cl.atomic     = True;
+                end
+            endcase
+
         end
 
         // OTHER OPCODE ==========

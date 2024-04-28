@@ -14,6 +14,8 @@ LUI    = 0b0110111
 AUIPC  = 0b0010111
 JAL    = 0b1101111
 JALR   = 0b1100111
+LRSC   = 0b0101111
+
 
 # FUNC3s
 ADD        = 0x0
@@ -46,6 +48,10 @@ STORE_WORD = 0x2
 SH      = 0b001
 SB      = 0b000
 
+# FUNC5s
+LR = 0b00010
+SC = 0b00011
+
 
 
 ## define programs
@@ -56,7 +62,7 @@ def twos(integer, bits):
     y = x.bin[-bits:]
     return int(y, 2)
 
-def instr_gen(opcode = 0, rs1 = 0, rs2 = 0, rd = 0, funct3 = 0, I_imm = 0, S_imm = 0, B_imm = 0, shift_imm = 0, funct7=0, imm20=0):# TODO see how it handles negative numbers
+def instr_gen(opcode = 0, rs1 = 0, rs2 = 0, rd = 0, funct3 = 0, I_imm = 0, S_imm = 0, B_imm = 0, shift_imm = 0, funct7=0, imm20=0, funct5=0):# TODO see how it handles negative numbers
     I_imm = twos(I_imm, 13)
     S_imm = twos(S_imm, 13)
     B_imm = twos(B_imm, 13)
@@ -75,7 +81,8 @@ def instr_gen(opcode = 0, rs1 = 0, rs2 = 0, rd = 0, funct3 = 0, I_imm = 0, S_imm
            ((B_imm & 0b1000000000000) << 19) |\
            ((shift_imm & 0b11111) << 20) |\
            (funct7 << 30) |\
-           (imm20 << 12)
+           (imm20 << 12) |\
+           (funct5 << 27)
 
 ## EXAMPLE / TEST PROGRAMS:
 # Add: Approx ASM
@@ -241,6 +248,21 @@ testIOP_instrs = [
 #expected outputs:
 # 90,250,10,1,0,1,0,80,10,?? deciman
 
+
+## TEST ATOMIC INSTRUCTIONS
+
+# loc = 0 ## place in memory that is used, 1 word here
+testATOMIC_instrs = [
+    instr_gen(opcode=LRSC, funct5=LR,  rd=1, rs1=0),
+    instr_gen(opcode=LRSC, funct5=SC,  rd=2, rs1=0, rs2=1),
+    instr_gen(opcode=LRSC, funct5=SC,  rd=2, rs1=0, rs2=1),
+    instr_gen(opcode=LRSC, funct5=LR,  rd=1, rs1=0),
+    instr_gen(opcode=STORE, funct3=STORE_WORD, rs1=0, rs2=1, S_imm=0),
+    instr_gen(opcode=LRSC, funct5=SC,  rd=2, rs1=0, rs2=1),
+    instr_gen(opcode=LRSC, funct5=LR,  rd=1, rs1=0),
+    instr_gen(opcode=LOAD,  funct3=LOAD_WORD, rs1=0, rd=3, I_imm=0),
+    instr_gen(opcode=LRSC, funct5=SC,  rd=2, rs1=0, rs2=1),
+]
 
 ## TestOP: ASM
 
@@ -423,10 +445,11 @@ def add_next_hart(new_instrs):
 
 add_next_hart([]) ## add 0th hart (never used)
 # add_next_hart(testIOP_instrs)
-add_next_hart(testOP_instrs)
+# add_next_hart(testOP_instrs)
 # add_next_hart(testBRANCH_instrs)
 # add_next_hart(testMEM_instrs)
 # add_next_hart(testMISC_instrs)
+add_next_hart(testATOMIC_instrs)
 add_next_hart([])
 add_next_hart([])
 add_next_hart([])

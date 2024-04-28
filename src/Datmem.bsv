@@ -27,6 +27,8 @@ interface DatmemIfc; // using the same types as the rest of the system
     interface Get#(Word_T)  get_value;
     interface Get#(CL_T)    get_ctrl;
 
+    interface Get#(Bit#(1))    get_success;
+
     method Bit#(1) getmmapvalue();
 endinterface
 
@@ -42,6 +44,10 @@ module mkDatmem#(BlockRamTrueDualPort#(Bit#(9), Bit#(32)) dataMem)(DatmemIfc);
     Reg#(Word_T) alu_result <- mkReg(0);
 
     Reg#(Bit#(1)) mmapvalue <- mkReg(0);
+
+    Reg#(Valid_T) reserved <- mkReg(0);
+    Reg#(Bit#(1))    success  <- mkReg(0);
+
     method Bit#(1) getmmapvalue();
         return mmapvalue;
     endmethod
@@ -115,10 +121,31 @@ module mkDatmem#(BlockRamTrueDualPort#(Bit#(9), Bit#(32)) dataMem)(DatmemIfc);
     interface Put put_alu_result;
         method Action put (Word_T newalu_result);
             alu_result <= newalu_result;
+
+            // ATOMICS:  NB: The whole of memory is treated as one rage as far as atomic read and writes are concerned.. so ANY write will invalidate all reservations
+            if (controllines.atomic && controllines.data_write) begin
+                // SC instruction
+                if (reserved == valid) begin
+                    success <= 0;
+                end else begin
+                    success <= 1; // non-zero value means error
+                end
+            end
+            
             // start read from data memory (to be muxed at start of rfupdate stage)
             if (controllines.data_read) begin
                 dataMem.putB(False, True, truncate(unpack(alu_result)[31:2]), 0); // ignore 2 least sig bits since LoadWord
+                if (controllines.atomic) begin
+                    // LR instruction
+                    reserved <= valid;
+                end
+            end else if (controllines.data_write) begin
+                // if writing, no matter what we need to invalidate the reserved.
+                // we do this now because we have just read it, and we need to set it
+                // valid at the same time as we set it invalid
+                reserved <= 0;
             end
+            
         endmethod
     endinterface
 
@@ -126,24 +153,34 @@ module mkDatmem#(BlockRamTrueDualPort#(Bit#(9), Bit#(32)) dataMem)(DatmemIfc);
     interface Get get_value;
         method ActionValue#(Word_T) get ();
             if (controllines.data_write) begin
-                // write to data memory
-                Bit#(32) target = 0;
-                case (controllines.data_size)
-                    DatSize_Word: begin
-                        target = rfrs2;
-                    end
-                    DatSize_HalfWord: begin
-                        target[15:0] = rfrs2[15:0];
-                    end
-                    DatSize_Byte: begin
-                        target[7:0] = rfrs2[7:0];
-                    end
-                endcase
-                Bit#(9) addr = truncate(unpack(alu_result)[31:2]);
-                if (addr == 511) mmapvalue <= rfrs2[0]; // save to memory mapped value
-                else dataMem.putA(True, False, addr, target); // ignore 2 least sig bits since StoreWord // save to memory
+                // ATOMICS checks:
+                if (success == 0 || !controllines.atomic) begin
+                    // write data, return success=0
+                    Bit#(32) target = 0;
+                    case (controllines.data_size)
+                        DatSize_Word: begin
+                            target = rfrs2;
+                        end
+                        DatSize_HalfWord: begin
+                            target[15:0] = rfrs2[15:0];
+                        end
+                        DatSize_Byte: begin
+                            target[7:0] = rfrs2[7:0];
+                        end
+                    endcase
+                    Bit#(9) addr = truncate(unpack(alu_result)[31:2]);
+                    if (addr == 511) mmapvalue <= rfrs2[0]; // save to memory mapped value
+                    else dataMem.putA(True, False, addr, target); // ignore 2 least sig bits since StoreWord // save to memory
+            
+                end // else don't write, return error (performed elsewhere)
             end
             return alu_result; // this is mux-ed with read value in rfupdate stage now (NOT as per euarch-2)
+        endmethod
+    endinterface
+
+    interface Get get_success;
+        method ActionValue#(Bit#(1)) get ();
+            return success;
         endmethod
     endinterface
 

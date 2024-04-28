@@ -21,6 +21,8 @@ interface RfupdateIfc; // using the same types as the rest of the system
     interface Put#(Bit#(5)) put_rd;
     interface Put#(Word_T)  put_value;
     interface Put#(CL_T)    put_ctrl;
+    
+    interface Put#(Bit#(1))    put_success;
 endinterface
 
 module mkRfupdate#(BlockRamTrueDualPort#(Bit#(9), Bit#(32)) dataMem)(RfupdateIfc);
@@ -31,6 +33,8 @@ module mkRfupdate#(BlockRamTrueDualPort#(Bit#(9), Bit#(32)) dataMem)(RfupdateIfc
     Reg#(Bit#(5)) rd <- mkReg(0);
     Reg#(Word_T)  value <- mkReg(0);
     Reg#(CL_T) controllines <- mkReg(unpack(0));
+
+    Reg#(Bit#(1))  success <- mkReg(0);
 
 
     interface Put put_valid;
@@ -87,6 +91,9 @@ module mkRfupdate#(BlockRamTrueDualPort#(Bit#(9), Bit#(32)) dataMem)(RfupdateIfc
                     end
                 endcase
                 v = pack(target);
+            end else if (controllines.atomic && controllines.data_write) begin
+                v = 0;
+                v[0] = success;
             end else begin
                 v = value;
             end
@@ -149,6 +156,12 @@ module mkRfupdate#(BlockRamTrueDualPort#(Bit#(9), Bit#(32)) dataMem)(RfupdateIfc
     interface Put put_value;
         method Action put (Word_T newvalue);
             value <= newvalue;
+        endmethod
+    endinterface
+
+    interface Put put_success;
+        method Action put (Bit#(1) newsuccess);
+            success <= newsuccess;
         endmethod
     endinterface
 

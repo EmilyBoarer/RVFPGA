@@ -92,6 +92,7 @@ typedef struct { // Control Lines
     Bool isunsigned; // TODO rename e.g. to: ALU unsigned
     Bool arith_shift;
     Bool alu_inc_out; // for JAL/JALR
+    Bool atomic;
 } CL_T deriving (Bits, Eq);
 
 
